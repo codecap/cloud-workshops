@@ -1,6 +1,6 @@
 ---
 title:       Container
-description: An example slide deck created by Marp CLI
+description: Workshop and Tasks
 author:      Vladislav Nazarenko (vnazarenko@📯socket.de)
 keywords:    Container,runtimes,docker,podman
 url:         
@@ -26,7 +26,7 @@ paginate: true
 # How containers are different from VMs?
 * (normally) one running process
 * can (co)exist on VM/Physical Host
-* share the same kernel with the host
+* shares the same kernel with the host
 ---
 # Which kind of containers do you now?
 * docker
@@ -43,7 +43,6 @@ paginate: true
 - Podman / runc
 - [crio-o](https://cri-o.io/)
 - [kata](https://katacontainers.io/)
-
 
 ---
 ## Kata

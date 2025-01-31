@@ -1,6 +1,6 @@
 ---
 title:       Kubernetes Fundamentals
-description: An example slide deck created by Marp CLI
+description: Workshop and Tasks
 author:      Vladislav Nazarenko (vnazarenko@📯socket.de)
 keywords:    Kubernetes,OpenShift,k3s.minikube,microk8s,kind
 url:         
