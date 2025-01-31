@@ -35,7 +35,6 @@ Networking: LinkedIn, Xing
 ---
 
 ## Content
-- [Intro](intro.html)
 - [Container](container.html)
 - [K8S-Distros](k8s-distros.html)
 - [K8S-Fundamentals](k8s-fundamentals.html)

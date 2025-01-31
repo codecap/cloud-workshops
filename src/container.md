@@ -7,7 +7,8 @@ url:
 image:
 transition: cover
 theme: default
-backgroundImage: url(https://img.freepik.com/free-vector/blue-business-background-with-blocks_53876-100595.jpg?t=st=1738319283~exp=1738322883~hmac=ea0d8388150b0889b75b8f3ac5a6fd4409759ba73c485aff98af7a90e025ed5c&w=2000)
+#backgroundImage: url(https://img.freepik.com/free-vector/blue-business-background-with-blocks_53876-100595.jpg?t=st=1738319283~exp=1738322883~hmac=ea0d8388150b0889b75b8f3ac5a6fd4409759ba73c485aff98af7a90e025ed5c&w=2000)
+backgroundImage: url(file:///background.jpg)
 paginate: true
 ---
 
@@ -15,7 +16,28 @@ paginate: true
 ![bg left:40% 80%](https://raw.githubusercontent.com/kubernetes/community/322066e7dba7c5043071392fec427a57f8660734/icons/svg/resources/unlabeled/pod.svg)
 
 ---
+# What is a container?
+* filesystem (image)
+* resources (cpu/ram)
+* capabilities / permissions
+* network namespace
+* running process
 
+---
+# How containers are different from VMs?
+* (normally) one running process
+* can (co)exist on VM/Physical Host
+* share the same kernel with the host
+---
+# Which kind of containers do you now?
+* docker
+* podman
+* lxc
+---
+## Docker / containerd
+![bg right:60% 80%](https://speedmedia.jfrog.com/08612fe1-9391-4cf3-ac1a-6dd49c36b276/media.jfrog.com/wp-content/uploads/2021/05/31004836/Containerd-Docker-Registry.png)
+
+---
 ## Container Runtime
 - [k8s doc](https://kubernetes.io/docs/setup/production-environment/container-runtimes/#container-runtimes)
 - Docker / containerd
@@ -23,19 +45,16 @@ paginate: true
 - [crio-o](https://cri-o.io/)
 - [kata](https://katacontainers.io/)
 
----
-## Docker / containerd
-<img src="https://speedmedia.jfrog.com/08612fe1-9391-4cf3-ac1a-6dd49c36b276/media.jfrog.com/wp-content/uploads/2021/05/31004836/Containerd-Docker-Registry.png" width="600">
 
 ---
 ## Kata
-<img src="https://katacontainers.io/static/589e3d905652847b22c395fe6bbbace7/663f4/katacontainers_architecture_diagram.jpg" width=800>
+![bg right:60% 80%](https://katacontainers.io/static/589e3d905652847b22c395fe6bbbace7/663f4/katacontainers_architecture_diagram.jpg)
 
 ---
 ## Docker vs Podman
 
 * containerd vs runc
-* root or rootess
+* root or rootless
 
 ---
 ## Docker vs Podman
@@ -147,8 +166,8 @@ podman inspect       ...
 ```
 ---
 ### Image layers
+![bg right:40% 70%](https://miro.medium.com/v2/resize:fit:720/format:webp/0*HoxAZTZ2b2C7AM--)
 
-* <img src="https://miro.medium.com/v2/resize:fit:720/format:webp/0*HoxAZTZ2b2C7AM--" width="200">
 * Each instruction in Containerfile introduces a new layer in the image
 * The more builds/instructions, the bigger image gets
 ---
@@ -159,7 +178,7 @@ podman inspect       ...
 * Clean-up after installation (dnf, apt)
 * Use Multi-Stage Builds to produce smaller images
 * Use .dockerignore / .containerignore
-* Specify user workdir
+* Specify user and workdir
 * Avoid secrets or configuration data
 * Sign your images
 * No need for ssh
