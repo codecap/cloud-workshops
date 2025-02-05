@@ -42,8 +42,10 @@ paginate: true
 * docker
 * podman
 * lxc
+* 
+---
 
-# Why contaiers?
+# Why containers?
 * build -> ship -> run
 * simplify application delivery
 * solve dependency problems
@@ -284,6 +286,7 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 - [CNCF landscape](https://landscape.cncf.io/)
 - [katacontainers](https://katacontainers.io/)
 - [Containerfile Reference](https://github.com/containers/common/blob/main/docs/Containerfile.5.md)
+- [docker/awesome-compose](https://github.com/docker/awesome-compose)
 
 
 ---
