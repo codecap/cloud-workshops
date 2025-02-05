@@ -232,13 +232,13 @@ podman inspect       ...
 
 ---
 
-# Acces and Data
+# Access and Data
 * (--)publish port or run in network host
 * Use exiting directory or (--)volume to access Data within container
 
 ---
 
-# Run own registry
+# Run your own registry
 ```bash
 podman run --detach --publish 5000:5000 --restart always \
   --name registry                                        \
@@ -284,14 +284,13 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 
 # Links
 - [CNCF landscape](https://landscape.cncf.io/)
-- [katacontainers](https://katacontainers.io/)
+- [Dockerfile Reference](https://docs.docker.com/reference/dockerfile/)
 - [Containerfile Reference](https://github.com/containers/common/blob/main/docs/Containerfile.5.md)
 - [docker/awesome-compose](https://github.com/docker/awesome-compose)
 
-
 ---
-* [//]: # (TODO: some staff as backup)
-* Multi Stage builds
-* Distorless images
-* docker-compose
-* podman k8s manifest
+# More Topics to review
+- Multi Stage builds
+- Distroless images
+- docker-compose
+- podman k8s manifest
