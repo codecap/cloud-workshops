@@ -42,7 +42,7 @@ paginate: true
 * docker
 * podman
 * lxc
-* 
+
 ---
 
 # Why containers?
