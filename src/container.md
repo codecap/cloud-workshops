@@ -256,13 +256,13 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 ---
 
 # Tools
-- skopeo
-- crane
-- trivy
+- [skopeo](https://github.com/containers/skopeo)
+- [crane](https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md)
+- [trivy](https://trivy.dev/latest/docs/)
 - [dive](https://github.com/wagoodman/dive)
 - [buildah](https://github.com/containers/buildah/blob/main/docs/tutorials/03-on-build.md)
-- hadolint
-- curl
+- [hadolint](https://github.com/hadolint/hadolint)
+- [curl](https://curl.se/)
 
 ---
 

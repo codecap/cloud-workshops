@@ -7,7 +7,7 @@ url:
 image:
 transition: cover
 theme: default
-backgroundImage: url(https://codecap.github.io/seeburger-workshops/assets/background.jpg)
+backgroundImage: url(https://codecap.github.io/cloud-workshops/assets/background.jpg)
 paginate: true
 ---
 
