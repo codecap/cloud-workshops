@@ -15,6 +15,7 @@ paginate: true
 ![bg left:40% 80%](https://raw.githubusercontent.com/kubernetes/community/322066e7dba7c5043071392fec427a57f8660734/icons/svg/resources/unlabeled/pod.svg)
 
 ---
+
 # What is a container?
 * filesystem (image)
 * resources (cpu/ram)
@@ -23,22 +24,38 @@ paginate: true
 * running process
 
 ---
+
 # How containers are different from VMs?
+![bg right:40%  100%](https://download-hk.huawei.com/mdl/image/download?uuid=4a95b0f6a4de4ebb9c9caa1dfa0ab0a9)
 * (normally) one running process
 * can (co)exist on VM/Physical Host
 * shares the same kernel with the host
-* [//]: # (TODO: picture)
+
 ---
+
+# How containers are different from VMs?
+![bg right:40% 100%](https://download-hk.huawei.com/mdl/image/download?uuid=43e73800cb8b482989764958bd7e7825)
+
+---
+
 # Which kind of containers do you know?
 * docker
 * podman
 * lxc
----
-## Docker / containerd
-![bg right:60% 80%](https://speedmedia.jfrog.com/08612fe1-9391-4cf3-ac1a-6dd49c36b276/media.jfrog.com/wp-content/uploads/2021/05/31004836/Containerd-Docker-Registry.png)
+
+# Why contaiers?
+* build -> ship -> run
+* simplify application delivery
+* solve dependency problems
 
 ---
-## Container Runtime
+
+# Docker / containerd
+![bg right:50% 70%](https://speedmedia.jfrog.com/08612fe1-9391-4cf3-ac1a-6dd49c36b276/media.jfrog.com/wp-content/uploads/2021/05/31004836/Containerd-Docker-Registry.png)
+
+---
+
+# Container Runtime
 - [k8s doc](https://kubernetes.io/docs/setup/production-environment/container-runtimes/#container-runtimes)
 - Docker / containerd
 - Podman / runc
@@ -46,17 +63,20 @@ paginate: true
 - [kata](https://katacontainers.io/)
 
 ---
-## Kata
+
+# Kata
 ![bg right:60% 80%](https://katacontainers.io/static/589e3d905652847b22c395fe6bbbace7/663f4/katacontainers_architecture_diagram.jpg)
 
 ---
-## Docker vs Podman
+
+# Docker vs Podman
 
 * containerd vs runc
 * root or rootless
 
 ---
-## Docker vs Podman
+
+# Docker vs Podman
 
 * Dockerfile vs Containerfile
 * Dockerfile is native to the Docker ecosystem
@@ -64,7 +84,8 @@ paginate: true
 * The syntax is identical
 
 ---
-## Install a Container Runtime
+
+# Install a Container Runtime
 - [Docker on ubuntu](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
 - [Docker on RHEL](https://docs.docker.com/engine/install/rhel/#install-using-the-repository)
 - Podman
@@ -75,10 +96,14 @@ apt install -y podman
 # rhel
 dnf install -y podman
 ```
+
 ---
-## Images
+
+# Images
+
 ---
-### Build
+
+# Build
 ```bash
 # create a Dockerfile/Containerfile
 cat > Dockerfile <<EOF
@@ -89,8 +114,10 @@ EOF
 docker build .
 podman build . # wont work
 ```
+
 ---
-### Image names
+
+# Image names
 ```bash
 |  nginx ->  | docker.io/library/nginx:latest  | 
 |  shortcut  | [REGISTRY/ [NS] / [IMAGE]:[TAG] |
@@ -107,8 +134,10 @@ podman build --tag myreigstry.local/test/mynginx:0.0.1 ./
 # start
 podman run --rm --name nginx --detach myreigstry.local/test/mynginx:0.0.1
 ```
+
 ---
-### Build Instructions
+
+# Build Instructions
 ```bash
 ADD         - Add local or remote files and directories.
 ARG         - Use build-time variables.
@@ -124,7 +153,7 @@ USER        - Set user and group ID.
 WORKDIR     - Change working directory.
 ```
 ---
-### Add more into image
+# Add more into image
 ```bash
 FROM docker.io/library/nginx:1.27.3
     
@@ -133,9 +162,10 @@ WORKDIR /usr/share/nginx/html/
 RUN  date > /usr/share/nginx/html/index.html
 COPY Containerfile /usr/share/nginx/html/
 ```
+
 ---
 
-### Test changes
+# Test changes
 ```bash
 # build
 podman build --tag myreigstry.local/test/mynginx:0.0.2 ./
@@ -147,8 +177,10 @@ podman run --rm --name nginx --detach myreigstry.local/test/mynginx:0.0.2
 podman  exec nginx curl -sS localhost
 podman  exec nginx curl -sS localhost/Containerfile
 ```
+
 ---
-### docker/podman commands
+
+# docker/podman commands
 ```bash
 podman image ls      ...
 podman image history ...
@@ -163,15 +195,18 @@ podman logs          ...
 podman exec          ...
 podman inspect       ...
 ```
+
 ---
-### Image layers
+
+# Image layers
 ![bg right:40% 70%](https://miro.medium.com/v2/resize:fit:720/format:webp/0*HoxAZTZ2b2C7AM--)
 
 * Each instruction in Containerfile introduces a new layer in the image
 * The more builds/instructions, the bigger image gets
+
 ---
 
-### Best practices building images
+# Best practices building images
 * Use trusted base images
 * Keep image small, minimize number of layers
 * Clean-up after installation (dnf, apt)
@@ -184,22 +219,24 @@ podman inspect       ...
 * Build images for single process/service
 
 ---
-### Registries
+
+# Registries
 
 * [docker hub](https://hub.docker.com)
 * [quay](https://quay.io/)
 * [amazon](https://gallery.ecr.aws)
 * azure, gcr, ghcr ...
 * private registries (Harbor, Quay, JFrog, Nexus ...)
+
 ---
 
-### Acces and Data
+# Acces and Data
 * (--)publish port or run in network host
 * Use exiting directory or (--)volume to access Data within container
+
 ---
 
-
-### Run own registry
+# Run own registry
 ```bash
 podman run --detach --publish 5000:5000 --restart always \
   --name registry                                        \
@@ -215,9 +252,10 @@ podman image search localhost:5000/ --tls-verify=false
 # pull
 podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 ```
+
 ---
 
-### Tools
+# Tools
 - skopeo
 - crane
 - trivy
@@ -227,7 +265,8 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 - curl
 
 ---
-## Tasks:
+
+# Tasks:
 - Build an image
 - Set labels on images, maintainer
 - Set user, workdir
@@ -241,7 +280,7 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 
 ---
 
-## Links
+# Links
 - [CNCF landscape](https://landscape.cncf.io/)
 - [katacontainers](https://katacontainers.io/)
 - [Containerfile Reference](https://github.com/containers/common/blob/main/docs/Containerfile.5.md)
@@ -249,3 +288,7 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 
 ---
 * [//]: # (TODO: some staff as backup)
+* Multi Stage builds
+* Distorless images
+* docker-compose
+* podman k8s manifest
