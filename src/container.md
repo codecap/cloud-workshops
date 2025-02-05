@@ -27,8 +27,9 @@ paginate: true
 * (normally) one running process
 * can (co)exist on VM/Physical Host
 * shares the same kernel with the host
+* [//]: # (TODO: picture)
 ---
-# Which kind of containers do you now?
+# Which kind of containers do you know?
 * docker
 * podman
 * lxc
@@ -228,13 +229,15 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 ---
 ## Tasks:
 - Build an image
-- Set labels on images
+- Set labels on images, maintainer
+- Set user, workdir
 - Add hosts when building
 - Try to run in --network=host
 - Set an ARG in Containerfile
 - Run a container from image, ports, volumes
 - Push/pull images to / from a registry
 - Pull a config file from a git repo, when starting container
+- Run a container as system service
 
 ---
 
@@ -242,3 +245,7 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 - [CNCF landscape](https://landscape.cncf.io/)
 - [katacontainers](https://katacontainers.io/)
 - [Containerfile Reference](https://github.com/containers/common/blob/main/docs/Containerfile.5.md)
+
+
+---
+* [//]: # (TODO: some staff as backup)
