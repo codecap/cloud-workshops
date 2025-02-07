@@ -35,13 +35,13 @@ Networking: LinkedIn, Xing
 ---
 
 ## Content
-- [Container](container.html)
-- [K8S-Distros](k8s-distros.html)
-- [K8S-Fundamentals](k8s-fundamentals.html)
-- K8S-ClusterManagement
-- KS8-AppManagement
-- K8S-Networking
-- K8S-Storage
-- K8S-Security
-- K8S-Observability
-- K8S-Troubleshooting
+1. [Container](container.html)
+1. [K8S-Distros](k8s-distros.html)
+1. [K8S-Fundamentals](k8s-fundamentals.html)
+1. K8S-ClusterManagement
+1. KS8-AppManagement
+1. K8S-Networking
+1. K8S-Storage
+1. K8S-Security
+1. K8S-Observability
+1. K8S-Troubleshooting

@@ -117,7 +117,7 @@ podman build . <span class="hljs-comment"># wont work</span>
 </code></pre>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-built_in">cat</span> &gt; Containerfile &lt;&lt;<span class="hljs-string">EOF
 FROM docker.io/library/nginx:1.27.3
-ADD
+ADD Containerfile /tmp
 EOF</span>
 </code></pre>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># build</span>
@@ -148,7 +148,7 @@ WORKDIR     - Change working directory.
     
 WORKDIR /usr/share/nginx/html/
 
-RUN  <span class="hljs-built_in">date</span> &gt; /usr/share/nginx/html/index.html
+RUN  /usr/bin/date &gt; /usr/share/nginx/html/index.html
 COPY Containerfile /usr/share/nginx/html/
 </code></pre>
 </section>

@@ -127,7 +127,7 @@ podman build . # wont work
 ```bash
 cat > Containerfile <<EOF
 FROM docker.io/library/nginx:1.27.3
-ADD
+ADD Containerfile /tmp
 EOF
 ```
 ```bash
@@ -161,7 +161,7 @@ FROM docker.io/library/nginx:1.27.3
     
 WORKDIR /usr/share/nginx/html/
 
-RUN  date > /usr/share/nginx/html/index.html
+RUN  /usr/bin/date > /usr/share/nginx/html/index.html
 COPY Containerfile /usr/share/nginx/html/
 ```
 
