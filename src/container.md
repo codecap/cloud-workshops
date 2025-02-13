@@ -254,6 +254,61 @@ podman image search localhost:5000/ --tls-verify=false
 # pull
 podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 ```
+---
+
+# Multi-Stage build
+
+```bash
+FROM golang:1.16-buster as builder
+
+# compile var01
+ADD https://raw.githubusercontent.com/minhaz1217/linux-configurations/refs/heads/master/docker/basic_go_api/src/main.go ./src/
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /basic-go-api ./src/main.go
+
+# compile var02
+# RUN    git clone https://github.com/minhaz1217/linux-configurations.git \
+#     && cp linux-configurations/docker/basic_go_api/src/main.go src/     \
+#     && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /$APP_NAME ./src/main.go
+
+# Then run stage
+FROM rockylinux:9
+# FROM debian:stable-slim
+# FROM scratch
+COPY --from=builder /basic-go-api .
+CMD ["./basic-go-api"]
+```
+
+---
+
+# Distroless Images
+![](https://github.com/distroless/.github/raw/main/profile/distroless-logo.svg)
+![bg right:40% 70%](https://www.upwind.io/wp-content/uploads/2024/01/Application-Container-image-Comparison-1024x737.png)
+
+---
+
+# docker compose
+[Review examples](https://github.com/docker/awesome-compose)
+
+Try
+```bash
+git clone https://github.com/docker/awesome-compose.git
+cd awesome-compose/wordpress-mysql/
+docker compose up
+```
+---
+
+# podman play
+```bash
+SRC=https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/src/container/podman/wordpress.yml
+# review
+curl $SRC
+# start
+podman play kube $SRC
+# visit the page with your browser or use curl
+curl -D- [YOUR_IP]:8080
+# stop
+podman play kube --down $SRC
+```
 
 ---
 
