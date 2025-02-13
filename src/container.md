@@ -276,9 +276,13 @@ podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 - Try to run in --network=host
 - Set an ARG in Containerfile
 - Run a container from image, ports, volumes
+- Build an Image as Multi-Stage build
+- Create a distroless Image / Image with only one binary inside
 - Push/pull images to / from a registry
 - Pull a config file from a git repo, when starting container
 - Run a container as system service
+- Try to run multiple containers with docker-compose
+- Try to run multiple containers with kube play (podman)
 
 ---
 
