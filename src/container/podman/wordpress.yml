@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  containers:
+  - name: wordpress
+    image: docker.io/library/wordpress:php8.2
+    command:
+      - apache2-foreground
+    ports:
+    - containerPort: 80
+      hostPort: 8080
+      protocol: TCP
+    env:
+    - name: WORDPRESS_DB_HOST
+      value: localhost
+    - name: WORDPRESS_DB_USER
+      value: wordpress
+    - name: WORDPRESS_DB_PASSWORD
+      value: wordpress
+    - name: WORDPRESS_DB_NAME
+      value: wordpress
+  dnsPolicy: Default
