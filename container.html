@@ -121,9 +121,9 @@ ADD Containerfile /tmp
 EOF</span>
 </code></pre>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># build</span>
-podman build --tag myreigstry.local/test/mynginx:0.0.1 ./
+podman build --tag myregistry.local/test/mynginx:0.0.1 ./
 <span class="hljs-comment"># start</span>
-podman run --<span class="hljs-built_in">rm</span> --name nginx --detach myreigstry.local/test/mynginx:0.0.1
+podman run --<span class="hljs-built_in">rm</span> --name nginx --detach myregistry.local/test/mynginx:0.0.1
 </code></pre>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="16" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="32" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
@@ -155,10 +155,10 @@ COPY Containerfile /usr/share/nginx/html/
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="18" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="32" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
 <h1 id="test-changes">Test changes</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># build</span>
-podman build --tag myreigstry.local/test/mynginx:0.0.2 ./
+podman build --tag myregistry.local/test/mynginx:0.0.2 ./
 
 <span class="hljs-comment"># run</span>
-podman run --<span class="hljs-built_in">rm</span> --name nginx --detach myreigstry.local/test/mynginx:0.0.2
+podman run --<span class="hljs-built_in">rm</span> --name nginx --detach myregistry.local/test/mynginx:0.0.2
 
 <span class="hljs-comment"># test</span>
 podman  <span class="hljs-built_in">exec</span> nginx curl -sS localhost
@@ -229,11 +229,11 @@ podman inspect       ...
   registry:2
 </code></pre>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># push</span>
-podman image push myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=<span class="hljs-literal">false</span>
+podman image push myregistry.local:5000/test/mynginx:0.0.2 --tls-verify=<span class="hljs-literal">false</span>
 <span class="hljs-comment"># search</span>
 podman image search localhost:5000/ --tls-verify=<span class="hljs-literal">false</span>
 <span class="hljs-comment"># pull</span>
-podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=<span class="hljs-literal">false</span>
+podman image pull myregistry.local:5000/test/mynginx:0.0.2 --tls-verify=<span class="hljs-literal">false</span>
 </code></pre>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="25" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="25" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="32" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">

@@ -132,9 +132,9 @@ EOF
 ```
 ```bash
 # build
-podman build --tag myreigstry.local/test/mynginx:0.0.1 ./
+podman build --tag myregistry.local/test/mynginx:0.0.1 ./
 # start
-podman run --rm --name nginx --detach myreigstry.local/test/mynginx:0.0.1
+podman run --rm --name nginx --detach myregistry.local/test/mynginx:0.0.1
 ```
 
 ---
@@ -170,10 +170,10 @@ COPY Containerfile /usr/share/nginx/html/
 # Test changes
 ```bash
 # build
-podman build --tag myreigstry.local/test/mynginx:0.0.2 ./
+podman build --tag myregistry.local/test/mynginx:0.0.2 ./
 
 # run
-podman run --rm --name nginx --detach myreigstry.local/test/mynginx:0.0.2
+podman run --rm --name nginx --detach myregistry.local/test/mynginx:0.0.2
 
 # test
 podman  exec nginx curl -sS localhost
@@ -248,11 +248,11 @@ podman run --detach --publish 5000:5000 --restart always \
 
 ```bash
 # push
-podman image push myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
+podman image push myregistry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 # search
 podman image search localhost:5000/ --tls-verify=false
 # pull
-podman image pull myreigstry.local:5000/test/mynginx:0.0.2 --tls-verify=false
+podman image pull myregistry.local:5000/test/mynginx:0.0.2 --tls-verify=false
 ```
 ---
 
