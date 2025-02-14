@@ -222,6 +222,12 @@ podman inspect       ...
 
 ---
 
+# Access and Data
+* (--)publish port or run in network host
+* Use existing directory or (--)volume to access Data within container
+
+---
+
 # Registries
 
 * [docker hub](https://hub.docker.com)
@@ -229,12 +235,6 @@ podman inspect       ...
 * [amazon](https://gallery.ecr.aws)
 * azure, gcr, ghcr ...
 * private registries (Harbor, Quay, JFrog, Nexus ...)
-
----
-
-# Access and Data
-* (--)publish port or run in network host
-* Use exiting directory or (--)volume to access Data within container
 
 ---
 
