@@ -224,7 +224,7 @@ podman inspect       ...
 
 # Access and Data
 * (--)publish port or run in network host
-* Use existing directory or (--)volume to access Data within container
+* Use existing directory or (--)volume to access data within container
 
 ---
 
