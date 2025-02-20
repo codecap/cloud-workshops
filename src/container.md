@@ -310,6 +310,8 @@ curl -D- [YOUR_IP]:8080
 podman play kube --down $SRC
 ```
 
+---
+
 # Run a container as system service
 
 ```bash
@@ -328,8 +330,6 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 ```
-
-
 ---
 
 # Tools
