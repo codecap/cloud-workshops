@@ -310,6 +310,26 @@ curl -D- [YOUR_IP]:8080
 podman play kube --down $SRC
 ```
 
+# Run a container as system service
+
+```bash
+cat > /etc/systemd/system/registry.service << EOF
+[Unit]
+Description=registry container
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/docker run -i --name registry.systemd --publish 5000:5000 --restart always  --volume registry:/var/lib/registry registry:2
+ExecStop=/usr/bin/docker stop registry.systemd -t 10
+ExecStop=/usr/bin/docker rm registry.systemd
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+
 ---
 
 # Tools
