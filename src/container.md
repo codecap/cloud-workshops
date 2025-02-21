@@ -268,14 +268,16 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /basic-go-api ./s
 # compile var02
 # RUN    git clone https://github.com/minhaz1217/linux-configurations.git \
 #     && cp linux-configurations/docker/basic_go_api/src/main.go src/     \
-#     && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /$APP_NAME ./src/main.go
+#     && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /basic-go-api ./src/main.go
 
 # Then run stage
 FROM rockylinux:9
 # FROM debian:stable-slim
 # FROM scratch
-COPY --from=builder /basic-go-api .
-CMD ["./basic-go-api"]
+ARG appname=basic-api
+ENV binname=$appname
+COPY --from=builder /basic-go-api /$binname
+CMD /${binname}
 ```
 
 ---
@@ -312,7 +314,7 @@ podman play kube --down $SRC
 
 ---
 
-# Run a container as system service
+# Run a Container as System Service
 
 ```bash
 cat > /etc/systemd/system/registry.service << EOF

@@ -15,3 +15,8 @@ paginate: true
 ![bg left:40% 80%](https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg)
 
 ---
+# Why Kubernetes
+## TODO: reasons why to operate applications on k8s, but not with docker/podman
+## Waht is K8S?
+
+---
