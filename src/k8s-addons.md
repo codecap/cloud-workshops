@@ -52,13 +52,14 @@ EOF
 
 ---
 
-## MetalLB
+# MetalLB
+![bg right:%40 30%](https://codecap.github.io/cloud-workshops/assets/metallb-layer2.png)
 
-### TODO: diagram
+---
 ```bash
-APP_NAME=metalllb
-helm repo add $APP_NAMR https://metallb.github.io/metallb
-helm install $APP_NAMR $APP_NAMR/$APP_NAMR -n $APP_NAMR-system --create-namespace
+APP_NAME=metallb
+helm repo add $APP_NAME https://metallb.github.io/metallb
+helm install $APP_NAME $APP_NAME/$APP_NAME -n $APP_NAME-system --create-namespace
 ```
 ---
 

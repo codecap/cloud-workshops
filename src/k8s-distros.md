@@ -85,12 +85,9 @@ paginate: true
 # Arkade
 ```bash
 # install arkade
-curl -sLS https://get.arkade.dev | sh
-mkdir -p  ~/.arkade/bin/
-mv arkade ~/.arkade/bin/
+curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
+echo 'export PATH="~/.arkade/bin/:$PATH"' > ~/.profile; source ~/.profile
 
-echo 'export PATH="~/.arkade/bin/:$PATH"' > ~/.profile
-source ~/.profile
 arkade get kubectl
 ```
 

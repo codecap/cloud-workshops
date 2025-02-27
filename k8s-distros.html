@@ -81,12 +81,9 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="8" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="17" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
 <h1 id="arkade">Arkade</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># install arkade</span>
-curl -sLS https://get.arkade.dev | sh
-<span class="hljs-built_in">mkdir</span> -p  ~/.arkade/bin/
-<span class="hljs-built_in">mv</span> arkade ~/.arkade/bin/
+curl -sLS https://get.arkade.dev | sh; <span class="hljs-built_in">mkdir</span> -p  ~/.arkade/bin/; <span class="hljs-built_in">mv</span> arkade ~/.arkade/bin/
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;~/.arkade/bin/:$PATH&quot;&#x27;</span> &gt; ~/.profile; <span class="hljs-built_in">source</span> ~/.profile
 
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;~/.arkade/bin/:$PATH&quot;&#x27;</span> &gt; ~/.profile
-<span class="hljs-built_in">source</span> ~/.profile
 arkade get kubectl
 </code></pre>
 </section>
