@@ -247,16 +247,14 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /basic-go-api ./s
 <span class="hljs-comment"># compile var02</span>
 <span class="hljs-comment"># RUN    git clone https://github.com/minhaz1217/linux-configurations.git \</span>
 <span class="hljs-comment">#     &amp;&amp; cp linux-configurations/docker/basic_go_api/src/main.go src/     \</span>
-<span class="hljs-comment">#     &amp;&amp; CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /basic-go-api ./src/main.go</span>
+<span class="hljs-comment">#     &amp;&amp; CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /$APP_NAME ./src/main.go</span>
 
 <span class="hljs-comment"># Then run stage</span>
 FROM rockylinux:9
 <span class="hljs-comment"># FROM debian:stable-slim</span>
 <span class="hljs-comment"># FROM scratch</span>
-ARG appname=basic-api
-ENV binname=<span class="hljs-variable">$appname</span>
-COPY --from=builder /basic-go-api /<span class="hljs-variable">$binname</span>
-CMD /<span class="hljs-variable">${binname}</span>
+COPY --from=builder /basic-go-api .
+CMD [<span class="hljs-string">&quot;./basic-go-api&quot;</span>]
 </code></pre>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="26" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://www.upwind.io/wp-content/uploads/2024/01/Application-Container-image-Comparison-1024x737.png&quot;);background-size:70%;"></figure></div></section></foreignObject><foreignObject width="60%" height="720"><section id="26" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="26" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
