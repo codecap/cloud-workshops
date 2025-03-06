@@ -154,10 +154,10 @@ kubectl  -n kube-system get deploy coredns -oyaml
 * C may share volumes
 
 ```bash
-kunectl --namespace get kube-system pods 
-kubectl --namespace get kube-system pods  -oyaml | less
-kubectl --namespace get kube-system pods  -owide
-kubectl --namespace get kube-system pods  -o custom-columns=ip:.status.podIP,name:.metadata.name
+kunectl --namespace kube-system get pods 
+kubectl --namespace kube-system get pods  -oyaml | less
+kubectl --namespace kube-system get pods  -owide
+kubectl --namespace kube-system get pods  -o custom-columns=ip:.status.podIP,name:.metadata.name
 kubectl --namespace kube-system exec -ti [SOMEPOD] -- bash
 kubectl --namespace kube-system logs deploy/coredns
 ```
@@ -441,10 +441,61 @@ in namespace: [SERVICE_NAME]
 
 ---
 # Authentication
+![bg right:45% 30%](https://riteshmblog.wordpress.com/wp-content/uploads/2022/05/kubernetes-secret.jpg)
+```bash
+# create a new key
+openssl genrsa -out user.key 2048
 
+# creqte a CSR
+openssl req -new -key user.key -out user.csr -subj "/CN=user/O=team-a/O=team-b"
+
+# create CertificateSigningRequest in K8S
+kubectl apply -f - <<EOF
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: user
+spec:
+  request: $(cat user.csr  | base64 -w0)
+  signerName: kubernetes.io/kube-apiserver-client
+  expirationSeconds: 86400  # one day
+  usages:
+  - client auth
+EOF
+kubectl certificate approve user
+kubectl get csr user -o yaml
+
+# extract the certifcate
+kubectl get csr user -o jsonpath='{.status.certificate}'  | base64 -d > user.crt
+# review certifcate
+openssl x509 -text -noout -in user.crt
+```
 ---
 # Authorization - RBAC
-  
+![bg right:45% 30%](https://riteshmblog.wordpress.com/wp-content/uploads/2022/05/kubernetes-secret.jpg)
+
+```bash
+# review available clusteroles
+kubectl get clusterroles
+
+# review rolebinding
+kubectl create rolebinding user-binding --clusterrole=edit --user=user    --namespace=[NAMESPACE] --dry-run=client -oyaml
+kubectl create rolebinding user-binding --clusterrole=edit --group=team-a --namespace=[NAMESPACE] --dry-run=client -oyaml
+
+# create rolebinding
+kubectl create rolebinding user-binding --clusterrole=edit --group=team-a --namespace=[NAMESPACE]
+
+# set user creds
+kubectl config set-credentials user --client-key=user.key --client-certificate=user.crt --embed-certs=true
+
+# create a new context
+kubectl config set-context user.[NAMESPACE] --cluster=kind-hello --user=user --namespace=[NAMESPACE]
+kubectl config get-contexts
+kubectl config use-context  user.[NAMESPACE]
+
+# test new context
+kubesystem get pods --namespace [NAMESPACE]
+```  
 ---
 # ReplicatonController, DaemonSet, StatefulSet
 
@@ -465,28 +516,34 @@ kubectl get statefulset -owide -A                 # review StatefulSet wit label
 
 ---
 # Tasks
-* install kubectl, helm, kind
-* create a kind k8s cluster
-* install addons
-* deploy a hello-world app
-* deploy a stateful app
-* list pods behind a service
-* [Mysql](https://medium.com/@veerababu.narni232/what-are-stateful-applications-2a257d876187)
-* https://kubernetes.io/docs/tasks/configure-pod-container/
+- install kubectl, helm, kind
+- create a kind k8s cluster
+- install addons
+- [deploy](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/) a hello-world app
+- scale up/down deployed applicatoin
+- [deploy](https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/) a stateful application
+- list pods behind a service
+- create an ingress to access an application
 
 ---
 # Links
-[Kubernetes Docs](https://kubernetes.io/docs/home/)
+- [Kubernetes Docs](https://kubernetes.io/docs/home/)
+- [RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+- [Certificate Signing Requests](https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/)
+- [arkade](https://github.com/alexellis/arkade)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
+- [helm](https://helm.sh/)
+- [kind](https://kind.sigs.k8s.io/)
 
 ---
 # Configure Firefox to access Nginx Ingress
-## TODO: how to tunnel ssh
+[Tunnel with putty](https://www.forbesconrad.com/blog/putty-port-forward-settings-for-socks-5-proxy/)
 
+Then socks5 proxy with firefox
 ```
-firefox -> settings -> proxy
-Choose: Manual proxy configuration
-  SOCKS5
-  host: localhost
-  port: 8888
+Firefox -> settings -> Proxy -> Manual proxy configuration
+
+SOCKSv5: ✔
+host:    localhost
+port:    1080
 ```
----
