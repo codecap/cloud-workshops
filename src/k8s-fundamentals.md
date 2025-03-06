@@ -16,12 +16,26 @@ paginate: true
 
 ---
 # Why Kubernetes ?
-* Handful of Apps -> Docker
-* Starting Tens   -> K8S
+* Handful of Apps ➡ Docker
+* Starting from Tens of Apps ➡ K8S
+
+---
+# Microservices Architecture
+
+Microservices can be deveploed, deployed and scaled independetly.
+
+How many microservices do you have ?
+
+| Company          | Number|
+|------------------|-------|
+| [Uber](https://www.uber.com/en-DE/blog/up-portable-microservices-ready-for-the-cloud/)     | 4500+ |
+| [LinkedIn](https://www.linkedin.com/pulse/microservice-architecture-lakshmi-barathi/) | 4000+ |
+| [Ebay](https://dzone.com/articles/microservices-at-ebay-part-2-sharing-modules-acros)     | 1000+ |
+| [Netflix](https://www.geeksforgeeks.org/the-story-of-netflix-and-microservices/)  | 1000+ |
 
 ---
 # Why Kubernetes ?
-* Orchestration -> Cloud Operating System
+* Orchestration ➡ Cloud Operating System
 * Deployment
 * Access 
 * Networking
@@ -31,11 +45,13 @@ paginate: true
 * Observability
 * Extendible
 * Integrations (Cloud, DNS, Certificates, Auth, Secrets)
----
-# Why it's possibie?
 
-* Why so many advantages over Docker(Swarm)?
-* The price is complexity
+
+---
+# Why is it possible?
+
+* Why so many advantages over Docker(Compose/Swarm)?
+* The price is the complexity
 * K8S - is extandible API
 
 ---
@@ -60,13 +76,15 @@ Application Programming Interface is a set of tools and protocols that allows di
 
 ---
 # Hello, k8s 👋
+![bg right:45% 50%](https://kind.sigs.k8s.io/logo/logo.png)
+
   ```bash
 # arkade - Marketplace For Developer Tools
 curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
 echo 'export PATH="~/.arkade/bin/:$PATH"' > ~/.bash_profile; source ~/.bash_profile
 
 # Kind - kubernetes in docker
-arkade install kind kubectl
+arkade get kind kubectl
 
 # Kubernetes Cluster
 kind create cluster --config - <<EOF
@@ -81,8 +99,24 @@ nodes:
 - role: worker
 EOF
 kind get kubeconfig --name hello > ~/.kube/config
-```
 
+
+# fix too many open files
+echo "fs.inotify.max_user_watches = 524288" | sudo tee  -a /etc/sysctl.d/99-kind.conf
+echo "fs.inotify.max_user_instances = 512"  | sudo tee  -a /etc/sysctl.d/99-kind.conf
+sudo sysctl --system
+
+
+# dnsmasq
+sudo dnf install -y dnsmasq
+echo "address=/.tst.k8s.mycompany.com/172.18.0.240" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
+echo "server=10.40.10.10" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
+
+# TODO: DNS Config
+# TODO: diagram dns -> LoadbalacerIP -> Infress-Nginx -> Service
+sudo systemctl enable --now dnsmasq
+```
+[Kind Known Bugs](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)
 
 ---
 # Review the cluster
@@ -104,7 +138,7 @@ kubectl get deployment  -A -owide
 ```
 
 ---
-# Hello, yaml 👋
+# Nice to meet you, yaml 👋
 
 ```bash
 kubectl  -n kube-system get deploy coredns -oyaml
@@ -119,6 +153,15 @@ kubectl  -n kube-system get deploy coredns -oyaml
 * C can reach each other via the IP
 * C may share volumes
 
+```bash
+kunectl --namespace get kube-system pods 
+kubectl --namespace get kube-system pods  -oyaml | less
+kubectl --namespace get kube-system pods  -owide
+kubectl --namespace get kube-system pods  -o custom-columns=ip:.status.podIP,name:.metadata.name
+kubectl --namespace kube-system exec -ti [SOMEPOD] -- bash
+kubectl --namespace kube-system logs deploy/coredns
+```
+
 ---
 # Kubernetes Service
 ![bg right:45% 100%](https://media.licdn.com/dms/image/v2/D4D12AQGmXfnZAybeVw/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1674655778535?e=1746057600&v=beta&t=0Lw3N1Hm289KScInrv77t8lH4GoK5oa7fT0p6_iiDfQ)
@@ -127,6 +170,12 @@ kubectl  -n kube-system get deploy coredns -oyaml
 * Type ClusterIP - within cluster
 * Type LoadBalancer - from outside
 
+```bash
+kubectl get services -A
+kubectl -n default get services --show-labels
+kubectl get services  -A
+kubectl get endpointslices -A --show-labels
+```
 ---
 # Kubernetes Deployment
 ![bg right:45% 100%](https://www.researchgate.net/publication/371543145/figure/fig1/AS:11431281167757737@1686745974914/Hierarchical-structure-of-Deployment-ReplicaSet-and-Pod-adapted-from-official.ppm)
@@ -169,10 +218,6 @@ kubectl -n kube-system scale deploy coredns --replicas 4
 \* Proxy - Ingress Controller (reverse proxy for Kubernetes)
 
 ---
-# Kubernetes Addons
-[Install Addons](k8s-addons.html)
-
----
 # Networking
 ![bg right:50% 100%](https://raw.githubusercontent.com/kubernetes/website/e32c776926325ea00b47beb4dff41fc9b4490c6f/content/en/docs/images/kubernetes-cluster-network.svg)
 * Nodes
@@ -181,48 +226,267 @@ kubectl -n kube-system scale deploy coredns --replicas 4
 
 ---
 # Routing
-![bg right:50% 100%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*Ow5A6_zjjwdKkf2Yi1KgYw.png)
+![bg right:40% 90%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*Ow5A6_zjjwdKkf2Yi1KgYw.png)
+* Every kubernetes node is a router
 
 ---
-# Access: ServiceType LoadBalancer
-![](https://kubernetes.io/docs/images/ingress.svg)
+# Kubernetes Addons
+[Install Addons](k8s-addons.html)
 
 ---
+# Service Type LoadBalancer
+![bg right:45% 100%](https://www.unixarena.com/wp-content/uploads/2022/09/K8s-LoadBalancer-MetalLB-1024x603.jpg)
 
 
-# data persistancy: PV, PVC, StorageClasses
+```bash
+kubectl get services -A
+
+
+NAMESPACE              NAME                                   TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)                      AGE
+default                kubernetes                             ClusterIP      10.96.0.1       <none>         443/TCP                      5d20h
+ingress-nginx          ingress-nginx-controller               LoadBalancer   10.96.239.70    172.18.0.240   80:31635/TCP,443:32731/TCP   4d20h
+ingress-nginx          ingress-nginx-controller-admission     ClusterIP      10.96.59.9      <none>         443/TCP                      4d20h
+kube-system            kube-dns                               ClusterIP      10.96.0.10      <none>         53/UDP,53/TCP,9153/TCP       5d20h
+kube-system            metrics-server                         ClusterIP      10.96.82.4      <none>         443/TCP                      4d16h
+kubernetes-dashboard   kubernetes-dashboard-api               ClusterIP      10.96.205.221   <none>         8000/TCP                     4d20h
+kubernetes-dashboard   kubernetes-dashboard-auth              ClusterIP      10.96.147.201   <none>         8000/TCP                     4d20h
+kubernetes-dashboard   kubernetes-dashboard-kong-proxy        ClusterIP      10.96.104.54    <none>         443/TCP                      4d20h
+kubernetes-dashboard   kubernetes-dashboard-metrics-scraper   ClusterIP      10.96.247.38    <none>         8000/TCP                     4d20h
+kubernetes-dashboard   kubernetes-dashboard-web               ClusterIP      10.96.139.51    <none>         8000/TCP                     4d20h
+metallb-system         metallb-webhook-service                ClusterIP      10.96.125.55    <none>         443/TCP                      5d17h
+pvc-test               nginx                                  ClusterIP      10.96.155.88    <none>         80/TCP                       15m
+```
+
+---
+# Data Persistence
+![bg right:50% 50%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*rz0glgDyD1irAp0Cqdd0gQ.png)
+```bash
+kubectl create namespace pvc-test
+kubectl apply -f - <<EOF
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: nginx
+  name: nginx
+  namespace: pvc-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: quay.io/jitesoft/nginx:1.27.3
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+      #   volumeMounts:
+      #   - mountPath: "/usr/local/nginx/html"
+      #     name: pvc-storage
+      # volumes:
+      # - name: pvc-storage
+      #   persistentVolumeClaim:
+      #     claimName: pvc-example
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-example
+  namespace: pvc-test
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: pvc-test
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx
+  namespace: pvc-test
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: nginx.tst.k8s.mycompany.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: nginx
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+EOF
+```
+
 
 ---
 
 # Configuration Management
 - ConfigMaps and Secrets
+```bash
+# ConfigMaps
+kubectl get configmap -n metallb-system metallb-excludel2 -oyaml
+
+# Secret
+kubectl get secret -n metallb-system metallb-memberlist -oyaml
+kubectl get secret -n metallb-system metallb-memberlist -ojsonpath='{.data.secretkey}'
+
+# How do they used
+kubectl get daemonset -n metallb-system  metallb-speaker -oyaml
+```
+---
+# Tutorial: Emojivoto Application
+[Deployment Source](https://github.com/BuoyantIO/emojivoto)
+![bg right:31% 100%](https://raw.githubusercontent.com/BuoyantIO/emojivoto/refs/heads/main/assets/emojivoto-topology.png)
+```bash
+# deploy the applicattion
+kubectl apply -k github.com/BuoyantIO/emojivoto/kustomize/deployment
+
+# add ingress to access
+kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name:      emojivoto
+  namespace: emojivoto
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: emojivoto.tst.k8s.mycompany.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: web-svc
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+EOF
+```
+
 
 ---
+# Tutorial: Guestboook Application
+[Docs](https://kubernetes.io/docs/tutorials/stateless-application/guestbook/)
 
-# ReplicatonController, DaemonSet, StatefulSet
+```bash
+kubectl -n guestbook apply   -f https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/guestbook/redis-leader-deployment.yaml
+kubectl -n guestbook apply   -f https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/guestbook/redis-leader-service.yaml
+kubectl -n guestbook apply   -f https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/guestbook/redis-follower-deployment.yaml
+kubectl -n guestbook apply   -f https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/guestbook/redis-follower-service.yaml
+kubectl -n guestbook apply   -f https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/guestbook/frontend-deployment.yaml
+kubectl -n guestbook apply   -f https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/guestbook/frontend-service.yaml
+
+kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name:      guestbook
+  namespace: guestbook
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: guestbook.tst.k8s.mycompany.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+EOF
+```
 
 ---
 # DNS and Service Discovery
 
+```
+domain:       .cluster.local
+
+globally:     [SERVICE_NAME].[NAMESPACE].svc.cluster.local
+in namespace: [SERVICE_NAME]
+```
+
 ---
-# Athentication
+# Authentication
 
 ---
 # Authorization - RBAC
+  
+---
+# ReplicatonController, DaemonSet, StatefulSet
+
+```bash
+# ReplicaSet
+kubectl get rs -n emojivoto -owide                # review rs with labels
+kubectl get pods -A -l  app=web-svc -owide -owide # get pods by labels
+
+# DaemonSet
+kubectl get ds -owide -A                          # review ds with labels
+kubectl get pods -A -l  app=kindnet -owide -owide # get pods by labels
+
+# StatefulSet
+kubectl get statefulset -owide -A                 # review StatefulSet wit labelss
+# ...
+```
+
 
 ---
-# -> k8s-addons
-
----
-# -> typical deployment(articlerating): namespace, deploy, service, labels, selectors, ingress
-
----
-
-
 # Tasks
+* install kubectl, helm, kind
 * create a kind k8s cluster
 * install addons
 * deploy a hello-world app
-* deploy a staful app
+* deploy a stateful app
 * list pods behind a service
+* [Mysql](https://medium.com/@veerababu.narni232/what-are-stateful-applications-2a257d876187)
+* https://kubernetes.io/docs/tasks/configure-pod-container/
+
+---
+# Links
+[Kubernetes Docs](https://kubernetes.io/docs/home/)
+
+---
+# Configure Firefox to access Nginx Ingress
+## TODO: how to tunnel ssh
+
+```
+firefox -> settings -> proxy
+Choose: Manual proxy configuration
+  SOCKS5
+  host: localhost
+  port: 8888
+```
 ---
