@@ -131,7 +131,7 @@ app:
       - $APP_NAME.$DOMAIN
 EOF
 
-# create host andry for vhost
+# create host entry for vhost
 printf "%s %s\n" $(kubectl get svc -A | grep nginx | grep LoadBalancer \
   | awk '{print $5}') $APP_NAME.$DOMAIN \
   | sudo tee -a  /etc/hosts
@@ -171,5 +171,3 @@ EOF
 # get the token to access dashboard
 kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 -d
 ```
-
----
