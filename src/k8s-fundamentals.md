@@ -472,7 +472,7 @@ openssl x509 -text -noout -in user.crt
 ```
 ---
 # Authorization - RBAC
-![bg right:45% 30%](https://media.licdn.com/dms/image/v2/D5612AQGf017zCKs4jg/article-cover_image-shrink_423_752/article-cover_image-shrink_423_752/0/1711521370903?e=1746662400&v=beta&t=mkNjSzHogOwqAm89UVKUgLPoXvIRoQmHJpgc1-_hMrM)
+![bg right:45% 90%](https://media.licdn.com/dms/image/v2/D5612AQGf017zCKs4jg/article-cover_image-shrink_423_752/article-cover_image-shrink_423_752/0/1711521370903?e=1746662400&v=beta&t=mkNjSzHogOwqAm89UVKUgLPoXvIRoQmHJpgc1-_hMrM)
 
 ```bash
 # review available clusteroles
@@ -496,6 +496,20 @@ kubectl config use-context  user.[NAMESPACE]
 # test new context
 kubesystem get pods --namespace [NAMESPACE]
 ```  
+Predefined cluster roles:
+* cluster-admin
+* admin
+* edit
+* view
+
+---
+# Authorization - RBAC
+
+Roles/ClusterRoles can be assigned to
+* user
+* groups
+* serviceaccounts
+
 ---
 # ReplicatonController, DaemonSet, StatefulSet
 
