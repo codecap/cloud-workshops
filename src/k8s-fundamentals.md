@@ -472,7 +472,7 @@ openssl x509 -text -noout -in user.crt
 ```
 ---
 # Authorization - RBAC
-![bg right:45% 30%](https://riteshmblog.wordpress.com/wp-content/uploads/2022/05/kubernetes-secret.jpg)
+![bg right:45% 30%](https://media.licdn.com/dms/image/v2/D5612AQGf017zCKs4jg/article-cover_image-shrink_423_752/article-cover_image-shrink_423_752/0/1711521370903?e=1746662400&v=beta&t=mkNjSzHogOwqAm89UVKUgLPoXvIRoQmHJpgc1-_hMrM)
 
 ```bash
 # review available clusteroles
