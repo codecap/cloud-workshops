@@ -519,11 +519,11 @@ kubectl get statefulset -owide -A                 # review StatefulSet wit label
 - install kubectl, helm, kind
 - create a kind k8s cluster
 - install addons
-- [deploy](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/) a hello-world app
-- scale up/down deployed applicatoin
-- [deploy](https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/) a stateful application
+- [deploy/change/scale/delete a application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
+- [Run a Single-Instance Stateful Application](https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/)
+- create a Service of Type LoadBalancer
 - list pods behind a service
-- create an ingress to access an application
+- create an ingress to access an web-based application
 
 ---
 # Links
