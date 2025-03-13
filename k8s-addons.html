@@ -112,10 +112,6 @@ app:
       - $APP_NAME.$DOMAIN
 EOF</span>
 
-<span class="hljs-comment"># create host entry for vhost</span>
-<span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;%s %s\n&quot;</span> $(kubectl get svc -A | grep nginx | grep LoadBalancer \
-  | awk <span class="hljs-string">&#x27;{print $5}&#x27;</span>) <span class="hljs-variable">$APP_NAME</span>.<span class="hljs-variable">$DOMAIN</span> \
-  | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> -a  /etc/hosts
 </code></pre>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="9" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="9" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">

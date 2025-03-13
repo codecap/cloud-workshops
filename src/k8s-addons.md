@@ -131,10 +131,6 @@ app:
       - $APP_NAME.$DOMAIN
 EOF
 
-# create host entry for vhost
-printf "%s %s\n" $(kubectl get svc -A | grep nginx | grep LoadBalancer \
-  | awk '{print $5}') $APP_NAME.$DOMAIN \
-  | sudo tee -a  /etc/hosts
 ```
 --- 
 ## Access to the Dashboard

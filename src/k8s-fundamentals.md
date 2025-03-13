@@ -22,7 +22,7 @@ paginate: true
 ---
 # Microservices Architecture
 
-Microservices can be deveploed, deployed and scaled independetly.
+Microservices can be developed, deployed and scaled independetly.
 
 How many microservices do you have ?
 
@@ -40,10 +40,10 @@ How many microservices do you have ?
 * Access 
 * Networking
 * Operations
-* Data Persistancy
+* Data Persistence
 * Scaling
 * Observability
-* Extendible
+* Extensibility
 * Integrations (Cloud, DNS, Certificates, Auth, Secrets)
 
 
@@ -113,7 +113,6 @@ echo "address=/.tst.k8s.mycompany.com/172.18.0.240" | sudo tee  -a  /etc/dnsmasq
 echo "server=10.40.10.10" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
 
 # TODO: DNS Config
-# TODO: diagram dns -> LoadbalacerIP -> Infress-Nginx -> Service
 sudo systemctl enable --now dnsmasq
 ```
 [Kind Known Bugs](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)
@@ -141,15 +140,15 @@ kubectl get deployment  -A -owide
 # Nice to meet you, yaml 👋
 
 ```bash
-kubectl  -n kube-system get deploy coredns -oyaml
+kubectl -n kube-system get deploy coredns -oyaml
 ```
 
 ---
 # Kubernetes Pod
-![bg right:45% 80%](https://kubernetes.io/docs/tutorials/kubernetes-basics/public/images/module_03_pods.svg)
+![bg right:35% 100%](https://kubernetes.io/docs/tutorials/kubernetes-basics/public/images/module_03_pods.svg)
 * may consist of multiple containers
 * has own network stack
-* C(ontainers) share the same IP
+* C(ontainers) within pod share the same IP
 * C can reach each other via the IP
 * C may share volumes
 
@@ -523,7 +522,7 @@ kubectl get ds -owide -A                          # review ds with labels
 kubectl get pods -A -l  app=kindnet -owide -owide # get pods by labels
 
 # StatefulSet
-kubectl get statefulset -owide -A                 # review StatefulSet wit labelss
+kubectl get statefulset -owide -A                 # review StatefulSet wit labels
 # ...
 ```
 
@@ -533,15 +532,16 @@ kubectl get statefulset -owide -A                 # review StatefulSet wit label
 - install kubectl, helm, kind
 - create a kind k8s cluster
 - install addons
-- [deploy/change/scale/delete a application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
-- [Run a Single-Instance Stateful Application](https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/)
+- [deploy/change/scale/delete an application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
+- [run a single-instance stateful application](https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/)
 - create a Service of Type LoadBalancer
 - list pods behind a service
-- create an ingress to access an web-based application
+- create an ingress to access a web-based application
 
 ---
 # Links
 - [Kubernetes Docs](https://kubernetes.io/docs/home/)
+- [Too Complex: It’s Not Kubernetes, It’s What It Does](https://www.cncf.io/blog/2025/03/06/too-complex-its-not-kubernetes-its-what-it-does/)
 - [RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
 - [Certificate Signing Requests](https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/)
 - [arkade](https://github.com/alexellis/arkade)

@@ -20,7 +20,7 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="3" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="3" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
 <h1 id="microservices-architecture">Microservices Architecture</h1>
-<p>Microservices can be deveploed, deployed and scaled independetly.</p>
+<p>Microservices can be developed, deployed and scaled independetly.</p>
 <p>How many microservices do you have ?</p>
 <table>
 <thead>
@@ -57,10 +57,10 @@
 <li data-marpit-fragment="3">Access</li>
 <li data-marpit-fragment="4">Networking</li>
 <li data-marpit-fragment="5">Operations</li>
-<li data-marpit-fragment="6">Data Persistancy</li>
+<li data-marpit-fragment="6">Data Persistence</li>
 <li data-marpit-fragment="7">Scaling</li>
 <li data-marpit-fragment="8">Observability</li>
-<li data-marpit-fragment="9">Extendible</li>
+<li data-marpit-fragment="9">Extensibility</li>
 <li data-marpit-fragment="10">Integrations (Cloud, DNS, Certificates, Auth, Secrets)</li>
 </ul>
 </section>
@@ -129,7 +129,6 @@ kind get kubeconfig --name hello &gt; ~/.kube/config
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;server=10.40.10.10&quot;</span> | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span>  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
 
 <span class="hljs-comment"># TODO: DNS Config</span>
-<span class="hljs-comment"># TODO: diagram dns -&gt; LoadbalacerIP -&gt; Infress-Nginx -&gt; Service</span>
 <span class="hljs-built_in">sudo</span> systemctl <span class="hljs-built_in">enable</span> --now dnsmasq
 </code></pre>
 <p><a href="https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files">Kind Known Bugs</a></p>
@@ -154,16 +153,16 @@ kubectl get deployment  -A -owide
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="11" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="11" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
 <h1 id="nice-to-meet-you-yaml-%F0%9F%91%8B">Nice to meet you, yaml <img class="emoji" draggable="false" alt="👋" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f44b.svg" data-marp-twemoji=""/></h1>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubectl  -n kube-system get deploy coredns -oyaml
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubectl -n kube-system get deploy coredns -oyaml
 </code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-marpit-fragments="5" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="12" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:45%;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://kubernetes.io/docs/tutorials/kubernetes-basics/public/images/module_03_pods.svg&quot;);background-size:80%;"></figure></div></section></foreignObject><foreignObject width="55%" height="720"><section id="12" data-marpit-fragments="5" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="12" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:45%;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-marpit-fragments="5" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="12" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://kubernetes.io/docs/tutorials/kubernetes-basics/public/images/module_03_pods.svg&quot;);background-size:100%;"></figure></div></section></foreignObject><foreignObject width="65%" height="720"><section id="12" data-marpit-fragments="5" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="12" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="kubernetes-pod">Kubernetes Pod</h1>
 
 <ul>
 <li data-marpit-fragment="1">may consist of multiple containers</li>
 <li data-marpit-fragment="2">has own network stack</li>
-<li data-marpit-fragment="3">C(ontainers) share the same IP</li>
+<li data-marpit-fragment="3">C(ontainers) within pod share the same IP</li>
 <li data-marpit-fragment="4">C can reach each other via the IP</li>
 <li data-marpit-fragment="5">C may share volumes</li>
 </ul>
@@ -531,7 +530,7 @@ kubectl get ds -owide -A                          <span class="hljs-comment"># r
 kubectl get pods -A -l  app=kindnet -owide -owide <span class="hljs-comment"># get pods by labels</span>
 
 <span class="hljs-comment"># StatefulSet</span>
-kubectl get statefulset -owide -A                 <span class="hljs-comment"># review StatefulSet wit labelss</span>
+kubectl get statefulset -owide -A                 <span class="hljs-comment"># review StatefulSet wit labels</span>
 <span class="hljs-comment"># ...</span>
 </code></pre>
 </section>
@@ -541,17 +540,18 @@ kubectl get statefulset -owide -A                 <span class="hljs-comment"># r
 <li>install kubectl, helm, kind</li>
 <li>create a kind k8s cluster</li>
 <li>install addons</li>
-<li><a href="https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/">deploy/change/scale/delete a application</a></li>
-<li><a href="https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/">Run a Single-Instance Stateful Application</a></li>
+<li><a href="https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/">deploy/change/scale/delete an application</a></li>
+<li><a href="https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/">run a single-instance stateful application</a></li>
 <li>create a Service of Type LoadBalancer</li>
 <li>list pods behind a service</li>
-<li>create an ingress to access an web-based application</li>
+<li>create an ingress to access a web-based application</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="32" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="32" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="33" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
 <h1 id="links">Links</h1>
 <ul>
 <li><a href="https://kubernetes.io/docs/home/">Kubernetes Docs</a></li>
+<li><a href="https://www.cncf.io/blog/2025/03/06/too-complex-its-not-kubernetes-its-what-it-does/">Too Complex: It’s Not Kubernetes, It’s What It Does</a></li>
 <li><a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/">RBAC Authorization</a></li>
 <li><a href="https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/">Certificate Signing Requests</a></li>
 <li><a href="https://github.com/alexellis/arkade">arkade</a></li>
