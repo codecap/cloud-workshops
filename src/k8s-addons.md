@@ -48,12 +48,34 @@ EOF
 ```
 
 ---
+# DNS
+```bash
+MY_COMPANY_NAMESERVER=$(cat /etc/resolv.conf  | grep nameserver | head -n1 | awk '{print $NF}')
+
+sudo dnf install -y dnsmasq
+NETWORK_NAME=kind
+IP_BASE=$(docker network inspect $NETWORK_NAME | jq .[0].IPAM -Mr | grep Gateway | awk -F '"' '{print $4}' | sed -r -e 's/[.][0-9]+$//')
+  echo "address=/.tst.k8s.mycompany.com/${IP_BASE}.240" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
+  echo "server=$MY_COMPANY_NAMESERVER" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
+
+mv /etc/resolv.conf /etc/resolv.conf.bak
+echo "nameserver 127.0.0.1" > /etc/resolv.conf
+systemctl enable --now dnsmasq
+```
+
+---
 # Helm
 ![bg right:45% 90%](https://lazzaretti.me/images/blog/2024/introduction-to-helm-3/helm3-intro.png)
 ## Package manager for Kubernetes
 
 Helm is the best way to find, share, and use software built for Kubernetes.
 
+```bash
+curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
+echo 'export PATH="~/.arkade/bin/:$PATH"' > ~/.bash_profile; source ~/.bash_profile
+
+arkade get helm
+```
 ---
 # MetalLB
 ![bg right:45% 100%](https://www.redhat.com/rhdc/managed-files/ohc/MetalLB%20advanced%20configuration-1.png)
@@ -69,7 +91,9 @@ helm install $APP_NAME $APP_NAME/$APP_NAME -n $APP_NAME-system --create-namespac
 ---
 # MetalLB - Configuration
 ```bash
-IP_BASE=$(docker network inspect kind | jq .[0].IPAM -Mr | grep Gateway | awk -F '"' '{print $4}' | sed -r -e 's/[.][0-9]+$//')
+NETWORK_NAME=kind
+# NETWORK_NAME=k3d-hello-k3d
+IP_BASE=$(docker network inspect $NETWORK_NAME | jq .[0].IPAM -Mr | grep Gateway | awk -F '"' '{print $4}' | sed -r -e 's/[.][0-9]+$//')
 START_IP="${IP_BASE}.240"
 END_IP="${IP_BASE}.254"
 

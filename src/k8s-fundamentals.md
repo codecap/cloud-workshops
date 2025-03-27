@@ -153,7 +153,7 @@ kubectl -n kube-system get deploy coredns -oyaml
 * C may share volumes
 
 ```bash
-kunectl --namespace kube-system get pods 
+kubectl --namespace kube-system get pods 
 kubectl --namespace kube-system get pods  -oyaml | less
 kubectl --namespace kube-system get pods  -owide
 kubectl --namespace kube-system get pods  -o custom-columns=ip:.status.podIP,name:.metadata.name
@@ -200,7 +200,7 @@ kubectl -n kube-system scale deploy coredns --replicas 4
 * Service uses selector(labels) to find pods
 * Service excludes from pool unhealthy pods
 * Service has a static ip
-* Service hadles tcp and udp, any port
+* Service handles tcp and udp, any port
 * Service can have no ip, Cluster IP, External IP
 * ``` kubectl -n kube-system get service```
 

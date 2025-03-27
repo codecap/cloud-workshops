@@ -166,7 +166,7 @@ kubectl get deployment  -A -owide
 <li data-marpit-fragment="4">C can reach each other via the IP</li>
 <li data-marpit-fragment="5">C may share volumes</li>
 </ul>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kunectl --namespace kube-system get pods 
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubectl --namespace kube-system get pods 
 kubectl --namespace kube-system get pods  -oyaml | less
 kubectl --namespace kube-system get pods  -owide
 kubectl --namespace kube-system get pods  -o custom-columns=ip:.status.podIP,name:.metadata.name
@@ -216,7 +216,7 @@ kubectl -n kube-system scale deploy coredns --replicas 4
 <li data-marpit-fragment="6">Service uses selector(labels) to find pods</li>
 <li data-marpit-fragment="7">Service excludes from pool unhealthy pods</li>
 <li data-marpit-fragment="8">Service has a static ip</li>
-<li data-marpit-fragment="9">Service hadles tcp and udp, any port</li>
+<li data-marpit-fragment="9">Service handles tcp and udp, any port</li>
 <li data-marpit-fragment="10">Service can have no ip, Cluster IP, External IP</li>
 <li data-marpit-fragment="11"><code> kubectl -n kube-system get service</code></li>
 </ul>
