@@ -17,10 +17,10 @@ paginate: true
 ---
 # Overview
 Test & Learn:
-- kind
-- minikube
-- microk8s
-- k3d
+- [kind](https://kind.sigs.k8s.io/)
+- [minikube](https://minikube.sigs.k8s.io/docs/)
+- [microk8s](https://microk8s.io/)
+- [k3d](https://k3d.io/)
 
 Vanila:
 - [k0s](https://k0sproject.io/)
@@ -86,9 +86,9 @@ OpenShift
 ![](https://kubernetes.io/images/docs/components-of-kubernetes.svg)
 
 ---
-# K8S Addons
+# Test your K8S Cluster
 ![bg right:40% 50%](https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg)
--  [Installing Addons on Kubernetes](https://kubernetes.io/docs/concepts/cluster-administration/addons/)
+-  [K8S Addons](https://codecap.github.io/cloud-workshops/k8s-addons.html)
 -  [Emojivoto](https://codecap.github.io/cloud-workshops/k8s-fundamentals.html#24)
 
 ---
