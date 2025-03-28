@@ -92,11 +92,25 @@ OpenShift
 -  [Emojivoto](https://codecap.github.io/cloud-workshops/k8s-fundamentals.html#24)
 
 ---
-# Arkade
+# Preparations
 ```bash
+# docker 
+dnf -y install dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+dnf -y install docker-ce docker-ce-cli
+systemctl enable --now docker
+
+useradd -m -G docker testuser
+echo "testuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/testuser
+su - testuser
+
+# selinux
+sed -r -e "s/^(SELINUX=).*/\1permissive/" -i /etc/selinux/config
+reboot
+
 # install arkade
 curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
-echo 'export PATH="~/.arkade/bin/:$PATH"' > ~/.profile; source ~/.profile
+echo 'export PATH="~/.arkade/bin/:$PATH"' > ~/.bash_profile; source ~/.bash_profile
 
 arkade get kubectl
 ```
@@ -131,6 +145,9 @@ nodes:
 - role: worker
 EOF
 kind get kubeconfig --name hello > ~/.kube/config
+
+# to delete hello cluster
+kind delete cluster --name hello
 ```
 
 ---
@@ -161,6 +178,7 @@ minikube unpause
 # Halt the cluster:
 minikube stop
 # loging to the minikube node
+# TODO: to test ingress with metallb do ssh first
 minikube ssh
 # Browse the catalog of easily installed Kubernetes services:
 minikube addons list
@@ -168,8 +186,6 @@ minikube addons list
 minikube start -p aged --kubernetes-version=v1.16.1
 # Delete all of the minikube clusters:
 minikube delete --all
-
-# NOTE: metallb deloyment from addons slide dindnot work
 ```
 ![bg right:50% 50%](https://miro.medium.com/v2/resize:fit:400/0*KzqL3xqmXzV5PPjX.png)
 
@@ -211,6 +227,7 @@ microk8s enable registry
 [Zero Friction Kubernetes](https://docs.k0sproject.io/stable/k0sctl-install/)
 __Single-node cluster__
 ```bash
+# NOTE: as root
 # install k0s
 arkade get k0s
 
@@ -227,6 +244,10 @@ kubectl get pods -A
 k0s stop
 k0s status
 k0s reset
+
+# TODO: ip a show kube-bridge
+# TODO: set IP_BASE=10.244.0 when installing metallb
+
 ```
 ![bg right:50% 50%](https://docs.k0sproject.io/v0.9.0/img/k0s-logo-full-color.svg)
 
@@ -234,6 +255,9 @@ k0s reset
 # k3d
 [k3s in docker](https://k3d.io/stable/)
 ```bash
+# as root
+arkade get k3d
+
 # create a new cluster
 k3d cluster create                       \
   --servers 3                            \

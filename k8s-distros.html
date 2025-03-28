@@ -15,10 +15,10 @@
 <h1 id="overview">Overview</h1>
 <p>Test &amp; Learn:</p>
 <ul>
-<li>kind</li>
-<li>minikube</li>
-<li>microk8s</li>
-<li>k3d</li>
+<li><a href="https://kind.sigs.k8s.io/">kind</a></li>
+<li><a href="https://minikube.sigs.k8s.io/docs/">minikube</a></li>
+<li><a href="https://microk8s.io/">microk8s</a></li>
+<li><a href="https://k3d.io/">k3d</a></li>
 </ul>
 <p>Vanila:</p>
 <ul>
@@ -85,18 +85,32 @@
 <p><img src="https://kubernetes.io/images/docs/components-of-kubernetes.svg" alt="" /></p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="6" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="60%" height="720"><section id="6" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="6" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
-<h1 id="k8s-addons">K8S Addons</h1>
+<h1 id="test-your-k8s-cluster">Test your K8S Cluster</h1>
 
 <ul>
-<li><a href="https://kubernetes.io/docs/concepts/cluster-administration/addons/">Installing Addons on Kubernetes</a></li>
+<li><a href="https://codecap.github.io/cloud-workshops/k8s-addons.html">K8S Addons</a></li>
 <li><a href="https://codecap.github.io/cloud-workshops/k8s-fundamentals.html#24">Emojivoto</a></li>
 </ul>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="6" style="" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="7" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="7" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
-<h1 id="arkade">Arkade</h1>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># install arkade</span>
+<h1 id="preparations">Preparations</h1>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># docker </span>
+dnf -y install dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+dnf -y install docker-ce docker-ce-cli
+systemctl <span class="hljs-built_in">enable</span> --now docker
+
+useradd -m -G docker testuser
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;testuser ALL=(ALL) NOPASSWD: ALL&quot;</span> &gt; /etc/sudoers.d/testuser
+su - testuser
+
+<span class="hljs-comment"># selinux</span>
+sed -r -e <span class="hljs-string">&quot;s/^(SELINUX=).*/\1permissive/&quot;</span> -i /etc/selinux/config
+reboot
+
+<span class="hljs-comment"># install arkade</span>
 curl -sLS https://get.arkade.dev | sh; <span class="hljs-built_in">mkdir</span> -p  ~/.arkade/bin/; <span class="hljs-built_in">mv</span> arkade ~/.arkade/bin/
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;~/.arkade/bin/:$PATH&quot;&#x27;</span> &gt; ~/.profile; <span class="hljs-built_in">source</span> ~/.profile
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;~/.arkade/bin/:$PATH&quot;&#x27;</span> &gt; ~/.bash_profile; <span class="hljs-built_in">source</span> ~/.bash_profile
 
 arkade get kubectl
 </code></pre>
@@ -127,6 +141,9 @@ nodes:
 - role: worker
 EOF</span>
 kind get kubeconfig --name hello &gt; ~/.kube/config
+
+<span class="hljs-comment"># to delete hello cluster</span>
+kind delete cluster --name hello
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="9" style="" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="10" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://miro.medium.com/v2/resize:fit:400/0*KzqL3xqmXzV5PPjX.png&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="10" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="10" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
@@ -155,6 +172,7 @@ minikube unpause
 <span class="hljs-comment"># Halt the cluster:</span>
 minikube stop
 <span class="hljs-comment"># loging to the minikube node</span>
+<span class="hljs-comment"># TODO: to test ingress with metallb do ssh first</span>
 minikube ssh
 <span class="hljs-comment"># Browse the catalog of easily installed Kubernetes services:</span>
 minikube addons list
@@ -162,8 +180,6 @@ minikube addons list
 minikube start -p aged --kubernetes-version=v1.16.1
 <span class="hljs-comment"># Delete all of the minikube clusters:</span>
 minikube delete --all
-
-<span class="hljs-comment"># NOTE: metallb deloyment from addons slide dindnot work</span>
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="10" style="" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="11" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://res.cloudinary.com/canonical/image/fetch/f_auto,q_auto,fl_sanitize,c_fill,w_460,h_231/https://ubuntu.com/wp-content/uploads/305a/microk8s-sticker.png&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="11" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="11" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
@@ -199,7 +215,8 @@ microk8s <span class="hljs-built_in">enable</span> registry
 <h1 id="k0s">k0s</h1>
 <p><a href="https://docs.k0sproject.io/stable/k0sctl-install/">Zero Friction Kubernetes</a><br />
 <strong>Single-node cluster</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># install k0s</span>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># NOTE: as root</span>
+<span class="hljs-comment"># install k0s</span>
 arkade get k0s
 
 <span class="hljs-comment"># install single-node cluster</span>
@@ -215,12 +232,19 @@ kubectl get pods -A
 k0s stop
 k0s status
 k0s reset
+
+<span class="hljs-comment"># TODO: ip a show kube-bridge</span>
+<span class="hljs-comment"># TODO: set IP_BASE=10.244.0 when installing metallb</span>
+
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="12" style="" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="13" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://k3d.io/stable/static/img/k3d_logo_black_blue.svg&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="13" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="13" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="16" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="k3d">k3d</h1>
 <p><a href="https://k3d.io/stable/">k3s in docker</a></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># create a new cluster</span>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># as root</span>
+arkade get k3d
+
+<span class="hljs-comment"># create a new cluster</span>
 k3d cluster create                       \
   --servers 3                            \
   --agents 3                             \

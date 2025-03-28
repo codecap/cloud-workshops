@@ -51,15 +51,19 @@ EOF
 # DNS
 ```bash
 MY_COMPANY_NAMESERVER=$(cat /etc/resolv.conf  | grep nameserver | head -n1 | awk '{print $NF}')
+MY_NIC=ens192
+MY_IP=$(ip a show $MY_NIC | grep "inet " | awk '{print $2}' | awk -F / '{print $1}')
 
 sudo dnf install -y dnsmasq
 NETWORK_NAME=kind
 IP_BASE=$(docker network inspect $NETWORK_NAME | jq .[0].IPAM -Mr | grep Gateway | awk -F '"' '{print $4}' | sed -r -e 's/[.][0-9]+$//')
   echo "address=/.tst.k8s.mycompany.com/${IP_BASE}.240" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
   echo "server=$MY_COMPANY_NAMESERVER" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
+  echo "interface=$MY_NIC" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
 
-mv /etc/resolv.conf /etc/resolv.conf.bak
-echo "nameserver 127.0.0.1" > /etc/resolv.conf
+sed -e "s/dns=.*/dns=$MY_IP;/" -i  /etc/NetworkManager/system-connections/ens192.nmconnection
+nmcli device reapply MY_NIC
+
 systemctl enable --now dnsmasq
 ```
 
