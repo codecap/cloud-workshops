@@ -51,7 +51,7 @@ OpenShift
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |k3d         | k3s in docker                                |                                                                              |
 |            |                                              |                                                                              |
-|            | ➡ k3s                                        |  ➡ k3s                                                                      |
+|            | ➡ k3s                                        |  ➡ k3s                                                                       |
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |k3s         |✅ Very easy to setup                         | 👎 Can make unwanted network changes while auto-configuration during setup   |
 |            |✅ Uses fewer resources                       | 👎 Manual configuration changes are difficult                                |
@@ -64,10 +64,10 @@ OpenShift
 |            |✅ No host OS dependencies                    |                                                                              |
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |OpenShift   |✅ Standartized                               | 👎 Less flexible due to built-in enterprise features                         |
-|            |✅ on-premise, in cloud - same installer      | 👎 Big Footprint                                                             |
-|            |✅ Full Featured Enterprise Environment       | 👎 Licence Costs / OKD Stream                                                |
-|            |✅ Enhanced Security and Compliance           | 👎                                                                           |
-|            |✅ Automation and Scalability                 | 👎                                                                           |
+|            |✅ on-premise, in cloud - same installer      | 👎 Big footprint                                                             |
+|            |✅ Full Featured Enterprise Environment       | 👎 Licence costs / OKD Stream                                                |
+|            |✅ Enhanced Security and Compliance           | 👎 Big learning curve                                                        |
+|            |✅ Automation and Scalability                 |                                                                              |
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 
 ```
