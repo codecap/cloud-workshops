@@ -27,7 +27,7 @@ Vanila:
 - [k0s](https://k0sproject.io/)
 - [k3s](https://k3s.io/)
 
-OpenShift
+OpenShift / OKD
 
 ---
 # Comparison
