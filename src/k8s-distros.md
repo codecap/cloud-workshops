@@ -23,9 +23,9 @@ Test & Learn:
 - [k3d](https://k3d.io/)
 
 Vanila:
+- [kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 - [k0s](https://k0sproject.io/)
 - [k3s](https://k3s.io/)
-- [kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 
 OpenShift
 
@@ -51,7 +51,7 @@ OpenShift
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |k3d         | k3s in docker                                |                                                                              |
 |            |                                              |                                                                              |
-|            | ➡ k3s                                       |  ➡ k3s                                                                      |
+|            | ➡ k3s                                        |  ➡ k3s                                                                      |
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |k3s         |✅ Very easy to setup                         | 👎 Can make unwanted network changes while auto-configuration during setup   |
 |            |✅ Uses fewer resources                       | 👎 Manual configuration changes are difficult                                |
@@ -65,7 +65,7 @@ OpenShift
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |OpenShift   |✅ Standartized                               | 👎 Less flexible due to built-in enterprise features                         |
 |            |✅ on-premise, in cloud - same installer      | 👎 Big Footprint                                                             |
-|            |✅ Full Featured K8S Environment              | 👎 Licence Costs / OKD Stream                                                |
+|            |✅ Full Featured Enterprise Environment       | 👎 Licence Costs / OKD Stream                                                |
 |            |✅ Enhanced Security and Compliance           | 👎                                                                           |
 |            |✅ Automation and Scalability                 | 👎                                                                           |
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
@@ -104,7 +104,7 @@ OpenShift
 # Prerequisites
 * Single VM with 8CPU, 32 RAM
 * Virtualization enabled in BIOS (Hardware Virtualization: expose hardware assisted virtualization to the guest OS)
-* Pull Secret (https://console.redhat.com/openshift/create/local)
+* Pull Secret for OpenShift(https://console.redhat.com/openshift/create/local)
 
 ---
 # Preparations
@@ -119,10 +119,8 @@ useradd -m -G docker testuser
 echo "testuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/testuser
 su - testuser
 mkdir .ssh
-echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO2gb9XhV5EwMttbU6ejeNyFNwkFpuFbBAsVT5G4PPAr vlad@socket.de" >> .ssh/authorized_keys
-chmod 700 .ssh/; chmod 600 .ssh/*
 
-# selinux
+# turn off selinux
 sed -r -e "s/^(SELINUX=).*/\1permissive/" -i /etc/selinux/config
 reboot
 
@@ -131,12 +129,8 @@ curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.ar
 echo 'export PATH="~/.arkade/bin/:$PATH"' > ~/.bash_profile; source ~/.bash_profile
 
 arkade get kubectl
-```
 
----
-# Fix to many open files
-```bash
-# fix too many open files
+# fix to many open files
 echo "fs.inotify.max_user_watches = 524288" | sudo tee  -a /etc/sysctl.d/99-kind.conf
 echo "fs.inotify.max_user_instances = 512"  | sudo tee  -a /etc/sysctl.d/99-kind.conf
 sudo sysctl --system
@@ -243,7 +237,6 @@ microk8s enable registry
 ---
 # k0s
 [Zero Friction Kubernetes](https://docs.k0sproject.io/stable/k0sctl-install/)
-__Single-node cluster__
 ```bash
 # NOTE: as root
 # install k0s
@@ -285,12 +278,10 @@ k3d cluster create                       \
 
 # get the kube-config for hte cluster
 k3d kubeconfig merge hello-k3d --output ~/.kube/config
-
-# TODO; check the IP in the config, if neccessary chenge to 127.0.0.1
+# TODO; check the IP in the config, if neccessary change to 127.0.0.1
 
 # list nodes
 kubectl get nodes -owide
-
 
 # delete the cluste
 k3d cluster delete hello-k3d
@@ -300,8 +291,6 @@ k3d cluster delete hello-k3d
 ---
 # OpenShift / OKD
 ![bg right:20% 50%](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/OpenShift-LogoType.svg/1920px-OpenShift-LogoType.svg.png)
-
-[Link](https://medium.com/@naveenkvisualpath/openshift-online-training-openshift-training-in-ameerpet-112d0a148d08)
 
 ```bash
 # as testuser
@@ -313,7 +302,6 @@ crc config set enable-cluster-monitoring true
 crc config set memory 30000
 crc config set cpus 8
 crc config view # /home/testuser/.crc/crc.json
-# pull secret https://console.redhat.com/openshift/create/local
 crc start --pull-secret-file pull-secret.json
 
 crc oc-env
@@ -331,7 +319,6 @@ crc stop
 - [Backup & Restore](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/backup_and_restore/control-plane-backup-and-restore#backing-up-etcd-data_backup-etcd)
 - [Logging](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/logging/logging-6-2#log62-cluster-logging-support)
 - [Cluster Scaling](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/machine_management/manually-scaling-machineset#manually-scaling-machineset)
-- [Topology](https://console-openshift-console.apps-crc.testing/topology/ns/openshift-console?view=graph)
 - [CI/CD](https://docs.redhat.com/en/documentation/red_hat_openshift_pipelines/1.18/html/pipelines_as_code/using-pipelines-as-code-repos#using-pipelines-as-code-with-a-github-app_using-pipelines-as-code-repos)
 - [Registry](https://docs.redhat.com/documentation/en-us/openshift_container_platform/4.18/html/registry/accessing-the-registry)
 - [Builds](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/builds_using_buildconfig/understanding-buildconfigs#builds-buildconfig_understanding-builds)
@@ -349,3 +336,10 @@ crc stop
 
 ---
 # Links
+- [Kind](https://kind.sigs.k8s.io)
+- [minikube](https://minikube.sigs.k8s.io/docs/)
+- [microk8s](https://microk8s.io/)
+- [k0s](https://docs.k0sproject.io/stable/k0sctl-install/)
+- [k3d](https://k3d.io/stable/)
+- [okd](https://okd.io/)
+- [OpenShift](https://www.redhat.com/de/technologies/cloud-computing/openshift)
