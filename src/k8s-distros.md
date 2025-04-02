@@ -309,7 +309,6 @@ crc console --credentials
 
 crc stop
 ```
-
 ---
 # OpenShift Features
 - [Monitoring](https://juanjo.garciaamaya.com/posts/openshift/crc_first_steps/)
@@ -323,6 +322,26 @@ crc stop
 - [Templates](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/building_applications/creating-applications#using-templates)
 - [SDN](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/networking/multiple-networks)
 - [Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/virtualization/creating-a-virtual-machine#virt-creating-vms-from-instance-types)
+
+---
+# Emojivoto on OpenShift
+```bash
+oc apply -k github.com/BuoyantIO/emojivoto/kustomize/deployment
+oc apply -f - <<EOF
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: emojivoto
+  namespace: emojivoto
+spec:
+  host: emojivoto.apps-crc.testing
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: web-svc
+EOF
+```
 
 ---
 # HomeTasks
