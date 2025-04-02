@@ -118,7 +118,6 @@ systemctl enable --now docker
 useradd -m -G docker testuser
 echo "testuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/testuser
 su - testuser
-mkdir .ssh
 
 # turn off selinux
 sed -r -e "s/^(SELINUX=).*/\1permissive/" -i /etc/selinux/config
@@ -336,7 +335,7 @@ crc stop
 
 ---
 # Links
-- [Kind](https://kind.sigs.k8s.io)
+- [kind](https://kind.sigs.k8s.io)
 - [minikube](https://minikube.sigs.k8s.io/docs/)
 - [microk8s](https://microk8s.io/)
 - [k0s](https://docs.k0sproject.io/stable/k0sctl-install/)

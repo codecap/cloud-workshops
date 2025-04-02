@@ -122,7 +122,6 @@ systemctl <span class="hljs-built_in">enable</span> --now docker
 useradd -m -G docker testuser
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;testuser ALL=(ALL) NOPASSWD: ALL&quot;</span> &gt; /etc/sudoers.d/testuser
 su - testuser
-<span class="hljs-built_in">mkdir</span> .ssh
 
 <span class="hljs-comment"># turn off selinux</span>
 sed -r -e <span class="hljs-string">&quot;s/^(SELINUX=).*/\1permissive/&quot;</span> -i /etc/selinux/config
@@ -328,7 +327,7 @@ crc stop
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="18" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="18" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
 <h1 id="links">Links</h1>
 <ul>
-<li><a href="https://kind.sigs.k8s.io">Kind</a></li>
+<li><a href="https://kind.sigs.k8s.io">kind</a></li>
 <li><a href="https://minikube.sigs.k8s.io/docs/">minikube</a></li>
 <li><a href="https://microk8s.io/">microk8s</a></li>
 <li><a href="https://docs.k0sproject.io/stable/k0sctl-install/">k0s</a></li>
