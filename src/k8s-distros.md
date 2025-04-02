@@ -88,7 +88,7 @@ OpenShift / OKD
 ---
 # How can we simply describe a software distrubution ?
   * same core
-  * sepcific archiеecture aspects
+  * sepcific architecture aspects
   * specific set of executables 
   * specific set of configurations
   * specific set of addons
