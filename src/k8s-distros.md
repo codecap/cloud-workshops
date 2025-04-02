@@ -86,10 +86,25 @@ OpenShift
 ![](https://kubernetes.io/images/docs/components-of-kubernetes.svg)
 
 ---
+# How can we simply describe a software distrubution ?
+  * same core
+  * sepcific archiеecture aspects
+  * specific set of executables 
+  * specific set of configurations
+  * specific set of addons
+  * specific installer
+
+---
 # Test your K8S Cluster
 ![bg right:40% 50%](https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg)
 -  [K8S Addons](https://codecap.github.io/cloud-workshops/k8s-addons.html)
 -  [Emojivoto](https://codecap.github.io/cloud-workshops/k8s-fundamentals.html#24)
+
+---
+# Prerequisites
+* Single VM with 8CPU, 32 RAM
+* Virtualization enabled in BIOS (Hardware Virtualization: expose hardware assisted virtualization to the guest OS)
+* Pull Secret (https://console.redhat.com/openshift/create/local)
 
 ---
 # Preparations
@@ -103,6 +118,9 @@ systemctl enable --now docker
 useradd -m -G docker testuser
 echo "testuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/testuser
 su - testuser
+mkdir .ssh
+echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO2gb9XhV5EwMttbU6ejeNyFNwkFpuFbBAsVT5G4PPAr vlad@socket.de" >> .ssh/authorized_keys
+chmod 700 .ssh/; chmod 600 .ssh/*
 
 # selinux
 sed -r -e "s/^(SELINUX=).*/\1permissive/" -i /etc/selinux/config
@@ -283,51 +301,43 @@ k3d cluster delete hello-k3d
 # OpenShift / OKD
 ![bg right:20% 50%](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/OpenShift-LogoType.svg/1920px-OpenShift-LogoType.svg.png)
 
+[Link](https://medium.com/@naveenkvisualpath/openshift-online-training-openshift-training-in-ameerpet-112d0a148d08)
+
 ```bash
-# install
-SRC_URL=https://github.com/minishift/minishift/releases/download/v1.32.0/minishift-1.32.0-linux-amd64.tgz
-curl -sS -L -o- $SRC_URL | tar -xzvf - */minishift --strip-components 1
-mv minishift /usr/local/bin/
-
-# download
+# as testuser
 SRC_URL=https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/crc/latest/crc-linux-amd64.tar.xz
-curl -sS -L -o- $SRC_URL | tar -xJvf - */crc --strip-components 1
-mkdir -p ~/bin
-mv crc ~/bin/
-
-
-export PATH=$PATH:$HOME/bin
-echo 'export PATH=$PATH:$HOME/bin' >> ~/.bash_profile
-
-
-# as root
-MY_USER_NAME=testuser
-echo "$MY_USER_NAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$MY_USER_NAME
-
+mkdir -p ~/bin; curl -sS -L -o- $SRC_URL | tar -C ~/bin -xJvf - */crc --strip-components 1
 
 crc setup
-
-crc start [--pull-secret-file FILE]
-
-# pull secret 
-https://console.redhat.com/openshift/create/local
-
-# The server is accessible via web console at:
-#   https://console-openshift-console.apps-crc.testing
-# Log in as administrator:
-#   Username: kubeadmin
-#   Password: PerYD-xPIko-zbfmU-mtWVV
-                                                                                                                                                                                                                                                                            
-# Log in as user:
-#   Username: developer
-#   Password: developer
-
+crc config set enable-cluster-monitoring true
+crc config set memory 30000
+crc config set cpus 8
+crc config view # /home/testuser/.crc/crc.json
+# pull secret https://console.redhat.com/openshift/create/local
+crc start --pull-secret-file pull-secret.json
 
 crc oc-env
 oc login -u [USER] -p [PASSWORD] https://api.crc.testing:6443
 
+crc console --credentials
+
 crc stop
 ```
+
+---
+# OpenShift Features
+- [Monitoring](https://juanjo.garciaamaya.com/posts/openshift/crc_first_steps/)
+- [Observability](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/cluster_observability_operator/index)
+- [Backup & Restore](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/backup_and_restore/control-plane-backup-and-restore#backing-up-etcd-data_backup-etcd)
+- [Logging](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/logging/logging-6-2#log62-cluster-logging-support)
+- [Cluster Scaling](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/machine_management/manually-scaling-machineset#manually-scaling-machineset)
+- [Topology](https://console-openshift-console.apps-crc.testing/topology/ns/openshift-console?view=graph)
+- [CI/CD](https://docs.redhat.com/en/documentation/red_hat_openshift_pipelines/1.18/html/pipelines_as_code/using-pipelines-as-code-repos#using-pipelines-as-code-with-a-github-app_using-pipelines-as-code-repos)
+- [Registry](https://docs.redhat.com/documentation/en-us/openshift_container_platform/4.18/html/registry/accessing-the-registry)
+- [Builds](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/builds_using_buildconfig/understanding-buildconfigs#builds-buildconfig_understanding-builds)
+- [Templates](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/building_applications/creating-applications#using-templates)
+- [SDN](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/networking/multiple-networks)
+- [Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/virtualization/creating-a-virtual-machine#virt-creating-vms-from-instance-types)
 
 ---
 # HomeTasks
