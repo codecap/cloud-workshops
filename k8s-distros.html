@@ -121,7 +121,6 @@ systemctl <span class="hljs-built_in">enable</span> --now docker
 
 useradd -m -G docker testuser
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;testuser ALL=(ALL) NOPASSWD: ALL&quot;</span> &gt; /etc/sudoers.d/testuser
-su - testuser
 
 <span class="hljs-comment"># turn off selinux</span>
 sed -r -e <span class="hljs-string">&quot;s/^(SELINUX=).*/\1permissive/&quot;</span> -i /etc/selinux/config
@@ -136,7 +135,7 @@ arkade get kubectl
 <span class="hljs-comment"># fix to many open files</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;fs.inotify.max_user_watches = 524288&quot;</span> | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span>  -a /etc/sysctl.d/99-kind.conf
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;fs.inotify.max_user_instances = 512&quot;</span>  | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span>  -a /etc/sysctl.d/99-kind.conf
-<span class="hljs-built_in">sudo</span> sysctl --system
+sysctl --system
 </code></pre>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="10" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="18" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://kind.sigs.k8s.io/logo/logo.png&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="10" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="10" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="18" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">

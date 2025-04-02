@@ -117,7 +117,6 @@ systemctl enable --now docker
 
 useradd -m -G docker testuser
 echo "testuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/testuser
-su - testuser
 
 # turn off selinux
 sed -r -e "s/^(SELINUX=).*/\1permissive/" -i /etc/selinux/config
@@ -132,7 +131,7 @@ arkade get kubectl
 # fix to many open files
 echo "fs.inotify.max_user_watches = 524288" | sudo tee  -a /etc/sysctl.d/99-kind.conf
 echo "fs.inotify.max_user_instances = 512"  | sudo tee  -a /etc/sysctl.d/99-kind.conf
-sudo sysctl --system
+sysctl --system
 ```
 
 ---
