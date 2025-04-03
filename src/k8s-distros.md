@@ -262,15 +262,15 @@ k0s reset
 
 ---
 # k3s
-
+![bg right:50% 50%](https://k3s.io/img/k3s-logo-light.svg)
 ```bash
+arkade get k3s
+
 k3sup install --local --k3s-extra-args='--disable=traefik'
 
 # uninstall
 sudo /usr/local/bin/k3s-uninstall.sh
-
 ```
-
 
 ---
 # k3d
