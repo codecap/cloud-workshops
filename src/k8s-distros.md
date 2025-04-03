@@ -264,7 +264,7 @@ k0s reset
 # k3s
 ![bg right:50% 50%](https://k3s.io/img/k3s-logo-light.svg)
 ```bash
-arkade get k3s
+arkade get k3sup
 
 k3sup install --local --k3s-extra-args='--disable=traefik'
 
@@ -368,7 +368,8 @@ EOF
 - [kind](https://kind.sigs.k8s.io)
 - [minikube](https://minikube.sigs.k8s.io/docs/)
 - [microk8s](https://microk8s.io/)
-- [k0s](https://docs.k0sproject.io/stable/k0sctl-install/)
 - [k3d](https://k3d.io/stable/)
+- [k0s](https://docs.k0sproject.io/stable/k0sctl-install/)
+- [k3s](https://docs.k3s.io/)
 - [okd](https://okd.io/)
 - [OpenShift](https://www.redhat.com/de/technologies/cloud-computing/openshift)
