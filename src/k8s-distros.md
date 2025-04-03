@@ -11,7 +11,7 @@ backgroundImage: url(https://codecap.github.io/cloud-workshops/assets/background
 paginate: true
 ---
 
-# Kubernetes Distrubutions
+# Kubernetes Distributions
 ![bg left:40% 80%](https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg)
 
 ---
@@ -36,7 +36,7 @@ OpenShift / OKD
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |            | Pro                                          | Contra                                                                       | 
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
-|Kind        |✅ Very easy to install                       | 👎 Hard to set up with other distros than Docker                             |
+|Kind        |✅ Very easy to install                       | 👎 Only single-node cluster                                                  |
 |            |✅ Uses fewer resources                       | 👎 Making manual configuration changes is difficult                          |
 |            |✅ Easily accessible using docker commands    |                                                                              |
 |            |✅ Containers are considered nodes            |                                                                              |
@@ -45,13 +45,13 @@ OpenShift / OKD
 |            |✅ Gives more access to the system            | 👎 Hard to set up                                                            |
 |            |✅ The most widely used and the oldest distro | 👎 Uses more resources                                                       | 
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
-|MicroK8S    |✅ Easy to setup                              | 👎 Can be set up as a multi-node cluster                                     |
+|MicroK8S    |✅ Easy to setup                              | 👎 Only single-node cluster                                                  |
 |            |✅ Uses fewer resources                       | 👎 Can’t be installed on machines with ARM32 CPUs                            |
 |            |✅ Up to date with Kubernetes releases        | 👎 Doesn’t give much access to the system                                    |
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |k3d         | k3s in docker                                |                                                                              |
 |            |                                              |                                                                              |
-|            | ➡ k3s                                        |  ➡ k3s                                                                       |
+|            | ➡ k3s                                       |  ➡ k3s                                                                      |
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |k3s         |✅ Very easy to setup                         | 👎 Can make unwanted network changes while auto-configuration during setup   |
 |            |✅ Uses fewer resources                       | 👎 Manual configuration changes are difficult                                |
@@ -65,7 +65,7 @@ OpenShift / OKD
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
 |OpenShift   |✅ Standartized                               | 👎 Less flexible due to built-in enterprise features                         |
 |            |✅ on-premise, in cloud - same installer      | 👎 Big footprint                                                             |
-|            |✅ Full Featured Enterprise Environment       | 👎 Licence costs / OKD Stream                                                |
+|            |✅ Full Featured Enterprise Environment       | 👎 License costs / OKD Stream                                                |
 |            |✅ Enhanced Security and Compliance           | 👎 Big learning curve                                                        |
 |            |✅ Automation and Scalability                 |                                                                              |
 |------------|----------------------------------------------|------------------------------------------------------------------------------|
@@ -86,7 +86,7 @@ OpenShift / OKD
 ![](https://kubernetes.io/images/docs/components-of-kubernetes.svg)
 
 ---
-# How can we simply describe a software distrubution ?
+# How can we simply describe a software distribution ?
   * same core
   * sepcific architecture aspects
   * specific set of executables 
@@ -227,7 +227,7 @@ microk8s enable ingress
 microk8s enable registry
 
 # build-in kubectl 
- microk8s kubectl ...
+microk8s kubectl ...
 ```
 ![bg right:50% 50%](https://res.cloudinary.com/canonical/image/fetch/f_auto,q_auto,fl_sanitize,c_fill,w_460,h_231/https://ubuntu.com/wp-content/uploads/305a/microk8s-sticker.png)
 
