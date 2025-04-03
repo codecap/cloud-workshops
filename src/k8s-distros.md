@@ -261,6 +261,18 @@ k0s reset
 ![bg right:50% 50%](https://docs.k0sproject.io/v0.9.0/img/k0s-logo-full-color.svg)
 
 ---
+# k3s
+
+```bash
+k3sup install --local --k3s-extra-args='--disable=traefik'
+
+# uninstall
+sudo /usr/local/bin/k3s-uninstall.sh
+
+```
+
+
+---
 # k3d
 [k3s in docker](https://k3d.io/stable/)
 ```bash

@@ -56,7 +56,8 @@ IP_BASE=$(docker network inspect <span class="hljs-variable">$NETWORK_NAME</span
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;interface=<span class="hljs-variable">$MY_NIC</span>&quot;</span> | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span>  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
 
 <span class="hljs-comment"># tell NetworkManager to use local dnsmasq server</span>
-sed -e <span class="hljs-string">&quot;s/dns=.*/dns=<span class="hljs-variable">$MY_IP</span>;/&quot;</span> -i  /etc/NetworkManager/system-connections/ens192.nmconnection
+nmcli c m ens192 ipv4.dns  <span class="hljs-string">&quot;127.0.0.1&quot;</span>
+<span class="hljs-comment"># sed -e &quot;s/dns=.*/dns=$MY_IP;/&quot; -i  /etc/NetworkManager/system-connections/ens192.nmconnection</span>
 nmcli device reapply MY_NIC
 
 systemctl <span class="hljs-built_in">enable</span> --now dnsmasq
