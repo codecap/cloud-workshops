@@ -268,6 +268,11 @@ arkade get k3sup
 
 k3sup install --local --k3s-extra-args='--disable=traefik'
 
+# kubectl
+k3s kubectl get nodes
+/home/testuser/kubeconfig /home/testuser/.kube/config
+kubectl get ndoes
+
 # uninstall
 sudo /usr/local/bin/k3s-uninstall.sh
 ```
