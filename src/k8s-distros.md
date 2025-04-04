@@ -298,7 +298,7 @@ k3d kubeconfig merge hello-k3d --output ~/.kube/config
 # list nodes
 kubectl get nodes -owide
 
-# delete the cluste
+# delete the cluster
 k3d cluster delete hello-k3d
 ```
 ![bg right:50% 50%](https://k3d.io/stable/static/img/k3d_logo_black_blue.svg)
@@ -308,9 +308,10 @@ k3d cluster delete hello-k3d
 ![bg right:20% 50%](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/OpenShift-LogoType.svg/1920px-OpenShift-LogoType.svg.png)
 
 ```bash
-# as testuser
+# login with ssh as testuser
 SRC_URL=https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/crc/latest/crc-linux-amd64.tar.xz
 mkdir -p ~/bin; curl -sS -L -o- $SRC_URL | tar -C ~/bin -xJvf - */crc --strip-components 1
+#!PATH
 
 crc setup
 crc config set enable-cluster-monitoring true
@@ -319,7 +320,7 @@ crc config set cpus 8
 crc config view # /home/testuser/.crc/crc.json
 crc start --pull-secret-file pull-secret.json
 
-crc oc-env
+eval $(crc oc-env)
 oc login -u [USER] -p [PASSWORD] https://api.crc.testing:6443
 
 crc console --credentials
@@ -365,7 +366,7 @@ EOF
 - create a kind cluster, install addons, deploy test application
 - create a minikube cluster, install addons, deploy test application
 - create a k0s cluster, install addons, deploy test application
-- create a k3d cluster, install addons, deploy test application
+- create a k3s cluster, install addons, deploy test application
 - create a crc cluster, install addons, deploy test application
 
 ---
