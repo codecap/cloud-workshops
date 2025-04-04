@@ -362,6 +362,20 @@ EOF
 ```
 
 ---
+# Comparison
+|-------------|-------------------------------------------------------------------------------------
+|             | Kind           | Minikube       | k0s            | k3s            | OpenShift      |
+|-------------|-------------------------------------------------------------------------------------
+|CRI          | containerd     | docker         | containerd     | containerd     | cri-o          |
+|-------------|-------------------------------------------------------------------------------------
+|CNI          | kindnet        | kube-router    | kube-router    | flannel        | ovn-kubernetes |
+|------------.|-------------------------------------------------------------------------------------
+|CSI          | local-path-stor| Storage Provisi| local-path-prov| local-path-prov| hostpath-provis|
+|-------------|-------------------------------------------------------------------------------------
+|Control Plane| inside         |  inside        |  outside       | outside        | inside         |
+|-------------|-------------------------------------------------------------------------------------
+
+---
 # HomeTasks
 - create a kind cluster, install addons, deploy test application
 - create a minikube cluster, install addons, deploy test application
