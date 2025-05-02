@@ -320,7 +320,6 @@ crc config set cpus 8
 crc config view # /home/testuser/.crc/crc.json
 crc start --pull-secret-file pull-secret.json
 
-eval $(crc oc-env)
 oc login -u [USER] -p [PASSWORD] https://api.crc.testing:6443
 
 crc console --credentials

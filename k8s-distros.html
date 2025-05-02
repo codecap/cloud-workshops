@@ -305,7 +305,6 @@ crc config <span class="hljs-built_in">set</span> cpus 8
 crc config view <span class="hljs-comment"># /home/testuser/.crc/crc.json</span>
 crc start --pull-secret-file pull-secret.json
 
-<span class="hljs-built_in">eval</span> $(crc oc-env)
 oc login -u [USER] -p [PASSWORD] https://api.crc.testing:6443
 
 crc console --credentials

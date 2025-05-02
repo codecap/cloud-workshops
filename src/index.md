@@ -14,7 +14,7 @@ paginate: true
 # Workshops
 
 
----
+---:q!
 # Author
 
 ![bg left w:256 ](https://www.xing.com/image/0_e_2_8e340a718_11349211_5/vladislav-nazarenko-foto.1024x1024.jpg)
@@ -38,7 +38,7 @@ Networking: LinkedIn, Xing
 1. [Container](container.html)
 1. [K8S-Distros](k8s-distros.html)
 1. [K8S-Fundamentals](k8s-fundamentals.html)
-1. K8S-ClusterManagement
+1. [K8S-ClusterManagement](k8s-fundamentals.html)
 1. KS8-AppManagement
 1. K8S-Networking
 1. K8S-Storage
