@@ -89,7 +89,7 @@ ln -s ~/.arkade/bin/kubectl ~/bin/kubectl
 ---
 # Preparations
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
-__krew - get plagins for kubectl__
+__krew - get plugins for kubectl__
 
 ```bash
 # on client node
@@ -243,21 +243,6 @@ ctr -n k8s.io container  ls | grep runc | awk '{print $1}' | while read id; do c
 dnf remove -y containerd.io
 reboot
 ```
-
-
----
-# k0s
-![bg right:50% 50%](https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light)
-```bash
-# NODE: do we need this?
-# prepare
-# mkdir -p /run/k0s
-# cd /run/k0s
-# ln -s /run/containerd/containerd.sock
-# ln -s /run/containerd/containerd.sock
-# cd 
-```
-
 ---
 # k0s
 ![bg right:50% 50%](https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light)
@@ -353,7 +338,7 @@ mv ~/kubeconfig ~/.kube/config
 Operator Lifecycle Manager
 [operatorhub.io](https://operatorhub.io)
 [Docs](https://olm.operatorframework.io/docs/getting-started/0)
-![bg right:40% 50%](https://olm.operatorframework.io/images/logo.svg)
+![bg right:50% 75%](https://olm.operatorframework.io/images/logo.svg)
 ```bash
 # on client node
 arkade get operator-sdk
@@ -370,11 +355,10 @@ kubectl -n operators get installplans
 kubectl -n olm get packagemanifest 
 
 ```
-
 ---
 # Monitoring
 [Prometheus Operator](https://prometheus-operator.dev/docs/getting-started/introduction/)
-![bg right:40% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
+![bg right:50% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
 ```bash
 kubectl create ns monitoring
 
@@ -399,8 +383,8 @@ EOF
 ```
 ---
 # Monitoring
-![bg right:40% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
-[Prometheus Crash Course]
+[Prometheus Crash Course](https://www.youtube.com/watch?v=BEBsuA5tgUU)
+![bg right:50% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
 __Try to create a prometheus instance__
 ```bash
 kubectl apply -f - <<EOF
@@ -425,7 +409,7 @@ kubectl -n monitoring delete prometheus prom-a
 ---
 # Monitoring
 __Install and configure__
-![bg right:40% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
+![bg right:50% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
 ```bash
 git clone https://github.com/prometheus-operator/kube-prometheus.git
 cd kube-prometheus/
@@ -440,7 +424,7 @@ done
 ```
 ---
 # Monitoring
-![bg right:40% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
+![bg right:50% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
 ```bash
 kubectl apply -f - <<EOF
 ---
@@ -571,9 +555,6 @@ systemctl enable --now  prometheus
 
 ---
 # Logging
-
----
-# Monitoring
 
 ---
 # Persistancy
