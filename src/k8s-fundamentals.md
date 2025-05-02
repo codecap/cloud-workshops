@@ -81,7 +81,7 @@ Application Programming Interface is a set of tools and protocols that allows di
   ```bash
 # arkade - Marketplace For Developer Tools
 curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
-echo 'export PATH="~/.arkade/bin/:$PATH"' > ~/.bash_profile; source ~/.bash_profile
+echo 'export PATH="~/.arkade/bin/:$PATH"' >> ~/.bash_profile; source ~/.bash_profile
 
 # Kind - kubernetes in docker
 arkade get kind kubectl

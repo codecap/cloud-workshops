@@ -53,11 +53,12 @@ ssh-keygen
 # the output of the following command should be executed on every node
 echo "echo \"$(cat ~/.ssh/id_rsa.pub)\" >> ~$MY_USER/.ssh/authorized_keys"
 
-# install arkade
+# install arkade an client node as regular user
 curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
 echo 'export PATH="~/.arkade/bin/:$PATH"' >> ~/.bash_profile; source ~/.bash_profile
 
-# on every node 
+# on every node as root
+MY_USER=rocky
 echo "$MY_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$MY_USER
 ```
 
@@ -67,20 +68,22 @@ echo "$MY_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$MY_USER
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
 __Some tools for your comfort__
 ```bash
-dnf install 'dnf-command(config-manager)'
-dnf config-manager --add-repo https://kubecolor.github.io/packages/rpm/kubecolor.repo
-dnf install -y kubecolor
+# on client node
+sudo dnf install 'dnf-command(config-manager)'
+sudo dnf config-manager --add-repo https://kubecolor.github.io/packages/rpm/kubecolor.repo
+sudo dnf install -y kubecolor bash-completion
 
-dnf install -y kubecolor
-
-kubectl completion bash > /etc/profile.d/kubectl-completion.sh
+arkade get kubectl
+kubectl completion bash | sudo tee -a /etc/profile.d/kubectl-completion.sh
 source /etc/profile
+ln -s ~/.arkade/bin/kubectl ~/bin/kubectl
 ```
 
 ```bash
-echo 'alias k="kubecolor"'                      >> ~/.bash_profile
-echo 'complete -o default -F __start_kubectl k' >> ~/.bash_profile
-source ~/.bash_profile
+# on client node
+  echo 'alias k="kubecolor"'                      >> ~/.bash_profile
+  echo 'complete -o default -F __start_kubectl k' >> ~/.bash_profile
+  source ~/.bash_profile
 ```
 
 ---
@@ -89,7 +92,8 @@ source ~/.bash_profile
 __krew - get plagins for kubectl__
 
 ```bash
-dnf install -y git
+# on client node
+sudo dnf install -y git
 (
   set -x; cd "$(mktemp -d)" &&
   OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
@@ -104,9 +108,11 @@ source ~/.bash_profile
 ```
 
 ```bash
+# on client node
 #
 # Install krew plugins
 #
+# on client node
 for p in  ctx ns node-shell
 do
   kubectl krew install $p
@@ -134,7 +140,7 @@ echo "PS1='[\u@\h \W \$(kube_ps1)]\\\$ '" >> ~/.bash_profile
 
 __Prepare Installation__
 ```bash
-# on each cluster node
+# on each cluster node as root
 swapoff -a
 sed -i '/ swap / s/^/#/' /etc/fstab
 
@@ -155,6 +161,7 @@ systemctl disable --now  firewalld
 ```
 __Install Containerd__
 ```bash
+# on each cluster node as root
 dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 dnf install -y containerd.io
 mv /etc/containerd/config.toml /etc/containerd/config.toml.bak
@@ -166,8 +173,9 @@ systemctl enable --now containerd.service
 ---
 # kubeadm
 ![bg right:50% 50%](https://kubernetes.io/images/kubeadm-stacked-color.png)
-__Install kubeadm__
+__Install and prepare kubeadm__
 ```bash
+# on each cluster node as root
 K8S_VERSION="1.32"
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -189,7 +197,8 @@ kubeadm config images list
 __Install K8S__
 ```bash
 # on master01
-MY_IP=$(ip a show eth0 | grep "inet " |  awk '{print $2}' | awk -F/ '{print $1}')
+MY_NIC=ens192
+MY_IP=$(ip a show $MY_NIC | grep "inet " |  awk '{print $2}' | awk -F/ '{print $1}')
 kubeadm init \
    --control-plane-endpoint "$MY_IP:6443" \
    --upload-certs \
@@ -202,7 +211,7 @@ ctr -n k8s.io container  ls
 
 echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bashrc; source ~/.bashrc
 kubectl get pods  -A
-kubectl get nodes  -A
+kubectl get nodes -A
 
 # CNI
 curl -sS https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/calico.yaml \
@@ -212,7 +221,7 @@ curl -sS https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifest
 
 # join master nodes
 kubeadm join $MASTER01_IP:6443 --token    [TOKEN] \
-        --discovery-token-ca-cert-hash    [HASH] \
+        --discovery-token-ca-cert-hash    [HASH]  \
         --control-plane --certificate-key [KEY]]
 
 # join worker nodes
@@ -227,7 +236,7 @@ kubectl get nodes  -owide
 ![bg right:50% 50%](https://kubernetes.io/images/kubeadm-stacked-color.png)
 __Reset__
 ```bash
-kubeadm reset
+kubeadm reset --force
 rm -rf  /etc/kubernetes/manifests/*
 rm -rf  /etc/cni/net.d
 ctr -n k8s.io container  ls | grep runc | awk '{print $1}' | while read id; do ctr -n k8s.io container delete $id; done
@@ -237,7 +246,7 @@ reboot
 
 
 ---
-# k0sctl
+# k0s
 ![bg right:50% 50%](https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light)
 ```bash
 # NODE: do we need this?
@@ -250,7 +259,7 @@ reboot
 ```
 
 ---
-# k0sctl
+# k0s
 ![bg right:50% 50%](https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light)
 ```bash
 # on the client node
@@ -281,7 +290,7 @@ EOF
 ```
 
 ---
-# k0sctl
+# k0s
 ![bg right:50% 50%](https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light)
 ```bash
 k0sctl apply --config ~/k0sctl.yaml
@@ -305,6 +314,7 @@ k0sctl reset --config ~/k0sctl.yaml
 # k3s
 ![bg right:60% 50%](https://k3s.io/img/k3s-logo-light.svg)
 ```bash
+# on client node
 arkade get k3sup
 
 # The first server starts the cluster
@@ -335,7 +345,7 @@ do
 done
 
 mkdir  -p ~/.kube
-mv ~/.kube/kubeconfig ~/.kube/config
+mv ~/kubeconfig ~/.kube/config
 ```
 
 ---
@@ -345,6 +355,7 @@ Operator Lifecycle Manager
 [Docs](https://olm.operatorframework.io/docs/getting-started/0)
 ![bg right:40% 50%](https://olm.operatorframework.io/images/logo.svg)
 ```bash
+# on client node
 arkade get operator-sdk
 operator-sdk olm install
 # check
@@ -389,6 +400,7 @@ EOF
 ---
 # Monitoring
 ![bg right:40% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
+[Prometheus Crash Course]
 __Try to create a prometheus instance__
 ```bash
 kubectl apply -f - <<EOF
@@ -402,8 +414,8 @@ spec: {}
 EOF
 
 # check
-kubectl -n operators get subscription
-kubectl -n operators get installplans
+kubectl -n operators  get subscription
+kubectl -n operators  get installplans
 kubectl -n monitoring get prometheus prom-a
 kubectl -n monitoring get pods
 # remove
@@ -419,11 +431,11 @@ git clone https://github.com/prometheus-operator/kube-prometheus.git
 cd kube-prometheus/
 git checkout remotes/origin/release-0.13
 
-kubectl create ns monitoring
 kubectl apply -f manifests/
-
-kubectl delete -f   manifests/prometheusOperator-deployment.yaml
-kubectl delete -f   manifests/{alertmanager,grafana,prometheus}-networkPolicy.yaml
+for f in  manifests/{alertmanager,grafana,prometheus}-networkPolicy.yaml
+do
+  kubectl delete -f $f
+done
 
 ```
 ---
@@ -508,7 +520,8 @@ With federation, a Prometheus server pulls data from other Prometheus servers.
 
 __Pull data from in-cluster into your global prometheus instance__
 ```bash
-cat > /etc/yum.repos.d/prometheus.repo <<"EOF"
+# on client node
+cat <<"EOF" | sudo tee /etc/yum.repos.d/prometheus.repo 
 [prometheus]
 name=prometheus
 baseurl=https://packagecloud.io/prometheus-rpm/release/el/$releasever/$basearch
@@ -519,7 +532,7 @@ gpgkey=https://packagecloud.io/prometheus-rpm/release/gpgkey
 gpgcheck=0
 metadata_expire=300
 EOF
-dnf -y  install prometheus2
+sudo dnf -y  install prometheus2
 
 # list of jobs
 curl -sS prometheus.tst.k8s.mycompany.com/api/v1/status/config \
@@ -535,10 +548,11 @@ curl -D- -G --data-urlencode 'match[]={job=~".+", __name__="kube_deployment_crea
 
 ---
 # Export Monitoring Data
-![bg right:40% 30%](https://upload.wikimedia.org/wikipedia/commons/3/38/Prometheus_software_logo.svg)
+![bg right:40% 30%](https://upload.wikimedia.org/wikipedia/commons/3/38/Prometheus_software_logo.svg) 
 __Pull data from in-cluster your global prometheus instance__
 ```bash
-cat > /etc/prometheus/prometheus.yml <<EOF
+# on client node
+cat <<EOF | sudo tee /etc/prometheus/prometheus.yml 
 global:
   scrape_interval: 15s
 scrape_configs:

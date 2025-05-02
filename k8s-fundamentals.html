@@ -97,7 +97,7 @@ Application Programming Interface is a set of tools and protocols that allows di
 <h1 id="hello-k8s-%F0%9F%91%8B">Hello, k8s <img class="emoji" draggable="false" alt="👋" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f44b.svg" data-marp-twemoji=""/></h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># arkade - Marketplace For Developer Tools</span>
 curl -sLS https://get.arkade.dev | sh; <span class="hljs-built_in">mkdir</span> -p  ~/.arkade/bin/; <span class="hljs-built_in">mv</span> arkade ~/.arkade/bin/
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;~/.arkade/bin/:$PATH&quot;&#x27;</span> &gt; ~/.bash_profile; <span class="hljs-built_in">source</span> ~/.bash_profile
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;~/.arkade/bin/:$PATH&quot;&#x27;</span> &gt;&gt; ~/.bash_profile; <span class="hljs-built_in">source</span> ~/.bash_profile
 
 <span class="hljs-comment"># Kind - kubernetes in docker</span>
 arkade get kind kubectl

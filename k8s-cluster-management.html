@@ -49,11 +49,12 @@ ssh-keygen
 <span class="hljs-comment"># the output of the following command should be executed on every node</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;echo \&quot;<span class="hljs-subst">$(cat ~/.ssh/id_rsa.pub)</span>\&quot; &gt;&gt; ~<span class="hljs-variable">$MY_USER</span>/.ssh/authorized_keys&quot;</span>
 
-<span class="hljs-comment"># install arkade</span>
+<span class="hljs-comment"># install arkade an client node as regular user</span>
 curl -sLS https://get.arkade.dev | sh; <span class="hljs-built_in">mkdir</span> -p  ~/.arkade/bin/; <span class="hljs-built_in">mv</span> arkade ~/.arkade/bin/
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;~/.arkade/bin/:$PATH&quot;&#x27;</span> &gt;&gt; ~/.bash_profile; <span class="hljs-built_in">source</span> ~/.bash_profile
 
-<span class="hljs-comment"># on every node </span>
+<span class="hljs-comment"># on every node as root</span>
+MY_USER=rocky
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$MY_USER</span> ALL=(ALL) NOPASSWD:ALL&quot;</span> &gt; /etc/sudoers.d/<span class="hljs-variable">$MY_USER</span>
 </code></pre>
 </section>
@@ -61,25 +62,28 @@ curl -sLS https://get.arkade.dev | sh; <span class="hljs-built_in">mkdir</span> 
 <h1 id="preparations-2">Preparations</h1>
 <p><br />
 <strong>Some tools for your comfort</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">dnf install <span class="hljs-string">&#x27;dnf-command(config-manager)&#x27;</span>
-dnf config-manager --add-repo https://kubecolor.github.io/packages/rpm/kubecolor.repo
-dnf install -y kubecolor
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+<span class="hljs-built_in">sudo</span> dnf install <span class="hljs-string">&#x27;dnf-command(config-manager)&#x27;</span>
+<span class="hljs-built_in">sudo</span> dnf config-manager --add-repo https://kubecolor.github.io/packages/rpm/kubecolor.repo
+<span class="hljs-built_in">sudo</span> dnf install -y kubecolor bash-completion
 
-dnf install -y kubecolor
-
-kubectl completion bash &gt; /etc/profile.d/kubectl-completion.sh
+arkade get kubectl
+kubectl completion bash | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> -a /etc/profile.d/kubectl-completion.sh
 <span class="hljs-built_in">source</span> /etc/profile
+<span class="hljs-built_in">ln</span> -s ~/.arkade/bin/kubectl ~/bin/kubectl
 </code></pre>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;alias k=&quot;kubecolor&quot;&#x27;</span>                      &gt;&gt; ~/.bash_profile
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;complete -o default -F __start_kubectl k&#x27;</span> &gt;&gt; ~/.bash_profile
-<span class="hljs-built_in">source</span> ~/.bash_profile
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+  <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;alias k=&quot;kubecolor&quot;&#x27;</span>                      &gt;&gt; ~/.bash_profile
+  <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;complete -o default -F __start_kubectl k&#x27;</span> &gt;&gt; ~/.bash_profile
+  <span class="hljs-built_in">source</span> ~/.bash_profile
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="5" style="" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="6" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://image.pngaaa.com/935/5527935-middle.png&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="6" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="6" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="preparations-3">Preparations</h1>
 <p><br />
 <strong>krew - get plagins for kubectl</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">dnf install -y git
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+<span class="hljs-built_in">sudo</span> dnf install -y git
 (
   <span class="hljs-built_in">set</span> -x; <span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(mktemp -d)</span>&quot;</span> &amp;&amp;
   OS=<span class="hljs-string">&quot;<span class="hljs-subst">$(uname | tr &#x27;[:upper:]&#x27; &#x27;[:lower:]&#x27;)</span>&quot;</span> &amp;&amp;
@@ -92,9 +96,11 @@ kubectl completion bash &gt; /etc/profile.d/kubectl-completion.sh
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;${KREW_ROOT:-$HOME/.krew}/bin:$PATH&quot;&#x27;</span> &gt;&gt; ~/.bash_profile
 <span class="hljs-built_in">source</span> ~/.bash_profile
 </code></pre>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment">#</span>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+<span class="hljs-comment">#</span>
 <span class="hljs-comment"># Install krew plugins</span>
 <span class="hljs-comment">#</span>
+<span class="hljs-comment"># on client node</span>
 <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span>  ctx ns node-shell
 <span class="hljs-keyword">do</span>
   kubectl krew install <span class="hljs-variable">$p</span>
@@ -117,7 +123,7 @@ curl -o ~/bin/kube-ps1.sh https://raw.githubusercontent.com/jonmosco/kube-ps1/ma
 
 <p><a href="https://phoenixnap.com/kb/install-kubernetes-on-rocky-linux">Link</a></p>
 <p><strong>Prepare Installation</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on each cluster node</span>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on each cluster node as root</span>
 swapoff -a
 sed -i <span class="hljs-string">&#x27;/ swap / s/^/#/&#x27;</span> /etc/fstab
 
@@ -137,7 +143,8 @@ sed -i --follow-symlinks <span class="hljs-string">&#x27;s/SELINUX=enforcing/SEL
 systemctl <span class="hljs-built_in">disable</span> --now  firewalld 
 </code></pre>
 <p><strong>Install Containerd</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on each cluster node as root</span>
+dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 dnf install -y containerd.io
 <span class="hljs-built_in">mv</span> /etc/containerd/config.toml /etc/containerd/config.toml.bak
 containerd config default &gt; /etc/containerd/config.toml
@@ -148,8 +155,9 @@ systemctl <span class="hljs-built_in">enable</span> --now containerd.service
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="7" style="" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="8" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://kubernetes.io/images/kubeadm-stacked-color.png&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="8" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="8" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="kubeadm-1">kubeadm</h1>
 <p><br />
-<strong>Install kubeadm</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">K8S_VERSION=<span class="hljs-string">&quot;1.32&quot;</span>
+<strong>Install and prepare kubeadm</strong></p>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on each cluster node as root</span>
+K8S_VERSION=<span class="hljs-string">&quot;1.32&quot;</span>
 <span class="hljs-built_in">cat</span> &lt;&lt;<span class="hljs-string">EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -170,7 +178,8 @@ kubeadm config images list
 <p><br />
 <strong>Install K8S</strong></p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on master01</span>
-MY_IP=$(ip a show eth0 | grep <span class="hljs-string">&quot;inet &quot;</span> |  awk <span class="hljs-string">&#x27;{print $2}&#x27;</span> | awk -F/ <span class="hljs-string">&#x27;{print $1}&#x27;</span>)
+MY_NIC=ens192
+MY_IP=$(ip a show <span class="hljs-variable">$MY_NIC</span> | grep <span class="hljs-string">&quot;inet &quot;</span> |  awk <span class="hljs-string">&#x27;{print $2}&#x27;</span> | awk -F/ <span class="hljs-string">&#x27;{print $1}&#x27;</span>)
 kubeadm init \
    --control-plane-endpoint <span class="hljs-string">&quot;<span class="hljs-variable">$MY_IP</span>:6443&quot;</span> \
    --upload-certs \
@@ -183,7 +192,7 @@ ctr -n k8s.io container  <span class="hljs-built_in">ls</span>
 
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;export KUBECONFIG=/etc/kubernetes/admin.conf&quot;</span> &gt;&gt; ~/.bashrc; <span class="hljs-built_in">source</span> ~/.bashrc
 kubectl get pods  -A
-kubectl get nodes  -A
+kubectl get nodes -A
 
 <span class="hljs-comment"># CNI</span>
 curl -sS https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/calico.yaml \
@@ -193,7 +202,7 @@ curl -sS https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifest
 
 <span class="hljs-comment"># join master nodes</span>
 kubeadm <span class="hljs-built_in">join</span> <span class="hljs-variable">$MASTER01_IP</span>:6443 --token    [TOKEN] \
-        --discovery-token-ca-cert-hash    [HASH] \
+        --discovery-token-ca-cert-hash    [HASH]  \
         --control-plane --certificate-key [KEY]]
 
 <span class="hljs-comment"># join worker nodes</span>
@@ -208,7 +217,7 @@ kubectl get nodes  -owide
 <h1 id="kubeadm-3">kubeadm</h1>
 <p><br />
 <strong>Reset</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubeadm reset
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubeadm reset --force
 <span class="hljs-built_in">rm</span> -rf  /etc/kubernetes/manifests/*
 <span class="hljs-built_in">rm</span> -rf  /etc/cni/net.d
 ctr -n k8s.io container  <span class="hljs-built_in">ls</span> | grep runc | awk <span class="hljs-string">&#x27;{print $1}&#x27;</span> | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> <span class="hljs-built_in">id</span>; <span class="hljs-keyword">do</span> ctr -n k8s.io container delete <span class="hljs-variable">$id</span>; <span class="hljs-keyword">done</span>
@@ -217,7 +226,7 @@ reboot
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="10" style="" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="11" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="11" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="11" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
-<h1 id="k0sctl">k0sctl</h1>
+<h1 id="k0s">k0s</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># NODE: do we need this?</span>
 <span class="hljs-comment"># prepare</span>
 <span class="hljs-comment"># mkdir -p /run/k0s</span>
@@ -228,7 +237,7 @@ reboot
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="11" style="" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="12" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="12" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="12" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
-<h1 id="k0sctl-1">k0sctl</h1>
+<h1 id="k0s-1">k0s</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on the client node</span>
 arkade get k0sctl
 
@@ -257,7 +266,7 @@ EOF</span>
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="12" style="" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="13" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="13" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="13" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
-<h1 id="k0sctl-2">k0sctl</h1>
+<h1 id="k0s-2">k0s</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">k0sctl apply --config ~/k0sctl.yaml
 
 <span class="hljs-built_in">mkdir</span> -p ~/.kube
@@ -277,7 +286,8 @@ k0sctl reset --config ~/k0sctl.yaml
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="13" style="" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="14" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:60%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://k3s.io/img/k3s-logo-light.svg&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="40%" height="720"><section id="14" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="14" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:60%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="k3s">k3s</h1>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">arkade get k3sup
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+arkade get k3sup
 
 <span class="hljs-comment"># The first server starts the cluster</span>
 k3sup install \
@@ -307,7 +317,7 @@ k3sup install \
 <span class="hljs-keyword">done</span>
 
 <span class="hljs-built_in">mkdir</span>  -p ~/.kube
-<span class="hljs-built_in">mv</span> ~/.kube/kubeconfig ~/.kube/config
+<span class="hljs-built_in">mv</span> ~/kubeconfig ~/.kube/config
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="14" style="" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="15" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://olm.operatorframework.io/images/logo.svg&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="60%" height="720"><section id="15" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="15" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
@@ -316,7 +326,8 @@ k3sup install \
 <a href="https://operatorhub.io">operatorhub.io</a><br />
 <a href="https://olm.operatorframework.io/docs/getting-started/0">Docs</a><br />
 </p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">arkade get operator-sdk
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+arkade get operator-sdk
 operator-sdk olm install
 <span class="hljs-comment"># check</span>
 
@@ -360,6 +371,7 @@ EOF</span>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="16" style="" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="17" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="60%" height="720"><section id="17" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="17" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-pagination-total="30" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="monitoring-1">Monitoring</h1>
 <p><br />
+[Prometheus Crash Course]<br />
 <strong>Try to create a prometheus instance</strong></p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubectl apply -f - &lt;&lt;<span class="hljs-string">EOF
 ---
@@ -372,8 +384,8 @@ spec: {}
 EOF</span>
 
 <span class="hljs-comment"># check</span>
-kubectl -n operators get subscription
-kubectl -n operators get installplans
+kubectl -n operators  get subscription
+kubectl -n operators  get installplans
 kubectl -n monitoring get prometheus prom-a
 kubectl -n monitoring get pods
 <span class="hljs-comment"># remove</span>
@@ -388,11 +400,11 @@ kubectl -n monitoring delete prometheus prom-a
 <span class="hljs-built_in">cd</span> kube-prometheus/
 git checkout remotes/origin/release-0.13
 
-kubectl create ns monitoring
 kubectl apply -f manifests/
-
-kubectl delete -f   manifests/prometheusOperator-deployment.yaml
-kubectl delete -f   manifests/{alertmanager,grafana,prometheus}-networkPolicy.yaml
+<span class="hljs-keyword">for</span> f <span class="hljs-keyword">in</span>  manifests/{alertmanager,grafana,prometheus}-networkPolicy.yaml
+<span class="hljs-keyword">do</span>
+  kubectl delete -f <span class="hljs-variable">$f</span>
+<span class="hljs-keyword">done</span>
 
 </code></pre>
 </section>
@@ -475,7 +487,8 @@ With federation, a Prometheus server pulls data from other Prometheus servers.</
 <h1 id="export-monitoring-data-2">Export Monitoring Data</h1>
 
 <p><strong>Pull data from in-cluster into your global prometheus instance</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-built_in">cat</span> &gt; /etc/yum.repos.d/prometheus.repo &lt;&lt;<span class="hljs-string">&quot;EOF&quot;</span>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+<span class="hljs-built_in">cat</span> &lt;&lt;<span class="hljs-string">&quot;EOF&quot;</span> | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> /etc/yum.repos.d/prometheus.repo 
 [prometheus]
 name=prometheus
 baseurl=https://packagecloud.io/prometheus-rpm/release/el/<span class="hljs-variable">$releasever</span>/<span class="hljs-variable">$basearch</span>
@@ -486,7 +499,7 @@ gpgkey=https://packagecloud.io/prometheus-rpm/release/gpgkey
 gpgcheck=0
 metadata_expire=300
 EOF
-dnf -y  install prometheus2
+<span class="hljs-built_in">sudo</span> dnf -y  install prometheus2
 
 <span class="hljs-comment"># list of jobs</span>
 curl -sS prometheus.tst.k8s.mycompany.com/api/v1/status/config \
@@ -504,7 +517,8 @@ curl -D- -G --data-urlencode <span class="hljs-string">&#x27;match[]={job=~&quot
 <h1 id="export-monitoring-data-3">Export Monitoring Data</h1>
 <p><br />
 <strong>Pull data from in-cluster your global prometheus instance</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-built_in">cat</span> &gt; /etc/prometheus/prometheus.yml &lt;&lt;<span class="hljs-string">EOF
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+<span class="hljs-built_in">cat</span> &lt;&lt;<span class="hljs-string">EOF | sudo tee /etc/prometheus/prometheus.yml 
 global:
   scrape_interval: 15s
 scrape_configs:
