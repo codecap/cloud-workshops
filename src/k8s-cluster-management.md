@@ -29,6 +29,36 @@ paginate: true
 ---
 # Preparations
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
+```bash
+# on every node as root
+MY_USER=deploy
+useradd -m $MY_USER
+echo "$MY_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$MY_USER
+
+# on the client node, login as regular user
+su - $MY_USER
+
+# on the client node
+ssh-keygen
+
+# the output of the following command should be executed on every node
+cat <<EOF
+#
+# please execute on every node as regular user
+#
+mkdir -p ~$MY_USER/.ssh; chmod 700 ~$MY_USER/.ssh;
+echo "$(cat ~/.ssh/id_rsa.pub)" >> ~$MY_USER/.ssh/authorized_keys; chmod 600 ~$MY_USER/.ssh/authorized_keys
+chown -R $MY_USER. ~$MY_USER/.ssh
+EOF
+
+# install arkade on client node as regular user
+curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
+echo 'export PATH="~/.arkade/bin/:$PATH"' >> ~/.bash_profile; source ~/.bash_profile
+```
+
+---
+# Preparations
+![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
 - Install and configure dnsmasq on the client node as desribed [here](https://codecap.github.io/cloud-workshops/k8s-addons.html#3)
 - Set Variables
 ```bash
@@ -46,35 +76,6 @@ MY_USER=deploy
 ---
 # Preparations
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
-```bash
-# on every node as root
-MY_USER=deploy
-useradd -m $MY_USER
-echo "$MY_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$MY_USER
-
-# on the client node
-ssh-keygen
-
-# the output of the following command should be executed on every node
-cat <<EOF
-#
-# please execute on every node
-#
-mkdir -p ~$MY_USER/.ssh; chmod 700 ~$MY_USER/.ssh;
-echo \"$(cat ~/.ssh/id_rsa.pub)\" >> ~$MY_USER/.ssh/authorized_keys; chmod 600 ~$MY_USER/.ssh/authorized_keys
-chown -R $MY_USER. ~$MY_USER/.ssh
-EOF
-
-# install arkade on client node as regular user
-curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
-echo 'export PATH="~/.arkade/bin/:$PATH"' >> ~/.bash_profile; source ~/.bash_profile
-
-```
-
-
----
-# Preparations
-![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
 __Some tools for your comfort__
 ```bash
 # on client node
@@ -83,6 +84,7 @@ sudo dnf config-manager --add-repo https://kubecolor.github.io/packages/rpm/kube
 sudo dnf install -y kubecolor bash-completion
 
 arkade get kubectl
+sudo ln -s ~/.arkade/bin/kubectl /usr/local/bin/
 kubectl completion bash | sudo tee -a /etc/profile.d/kubectl-completion.sh
 source /etc/profile
 ln -s ~/.arkade/bin/kubectl ~/bin/kubectl
@@ -90,9 +92,9 @@ ln -s ~/.arkade/bin/kubectl ~/bin/kubectl
 
 ```bash
 # on client node
-  echo 'alias k="kubecolor"'                      >> ~/.bash_profile
-  echo 'complete -o default -F __start_kubectl k' >> ~/.bash_profile
-  source ~/.bash_profile
+echo 'alias k="kubecolor"'                      >> ~/.bash_profile
+echo 'complete -o default -F __start_kubectl k' >> ~/.bash_profile
+source ~/.bash_profile
 ```
 
 ---
@@ -197,7 +199,7 @@ exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
 dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
-kubeadm config images pull
+kubeadm config images pull --kubernetes-version stable-$K8S_VERSION
 kubeadm config images list
 ```
 ---
@@ -234,7 +236,7 @@ kubeadm join $MASTER01_IP:6443 --token    [TOKEN] \
         --control-plane --certificate-key [KEY]]
 
 # join worker nodes
-kubeadm join 10.10.20.39:6443 --token     [TOKEN] \
+kubeadm $MASTER01_IP:6443 --token     [TOKEN] \
         --discovery-token-ca-cert-hash    [HASH]
 
 # list nodes
@@ -243,8 +245,17 @@ kubectl get nodes  -owide
 ---
 # kubeadm
 ![bg right:50% 50%](https://kubernetes.io/images/kubeadm-stacked-color.png)
+
+__Copy $KUBECONFIG__
+```bash
+# on cliet node as regular user
+mkdir -p ~/.kube
+scp $IP_M01:/etc/kubernetes/admin.conf  ~/.kube/config
+```
+
 __Reset__
 ```bash
+# on each cluster node as root
 kubeadm reset --force
 rm -rf  /etc/kubernetes/manifests/*
 rm -rf  /etc/cni/net.d
@@ -292,12 +303,15 @@ k0sctl apply --config ~/k0sctl.yaml
 mkdir -p ~/.kube
 k0sctl kubeconfig > ~/.kube/config
 
-# review runnning containers on the node
-# master
+# review on  master nodes
 systemctl status k0scontroller.service
 cat /etc/systemd/system/k0scontroller.service
 
-# worker
+# review on worker nodes
+systemctl status k0sworker.service
+cat  /etc/systemd/system/k0sworker.service
+
+# on worker if ctr installed
 ctr --address /run/k0s/containerd.sock -n k8s.io c ls
 
 # reset
@@ -341,11 +355,12 @@ done
 mkdir  -p ~/.kube
 mv ~/kubeconfig ~/.kube/config
 
-# TODO: howto remove
-# server
+# Reset
+# on master nodes
 /usr/local/bin/k3s-uninstall.sh
-# agent
-/usr/local/bin/k3s-agent-uninstall.sh/usr/local/bin/k3s-agent-uninstall.sh
+# on worker nodes
+/usr/local/bin/k3s-agent-uninstall.sh
+
 ```
 
 ---
@@ -444,6 +459,9 @@ git checkout remotes/origin/release-0.13
 # Apply all manifests in the directory
 #
 kubectl apply -f manifests/
+
+# operator is already installed by OLM, so remove this instance
+for i in manifests/prometheusOperator-*; do kubectl delete -f $i; done
 
 #
 # There are default network policies, which deny access from outside
@@ -583,7 +601,9 @@ scrape_configs:
       - targets:
         - 'prometheus.tst.k8s.mycompany.com'
 EOF
-systemctl enable --now  prometheus
+sudo systemctl enable --now  prometheus
+# test by visiting
+$MY_IP:9090
 ```
 
 ---
@@ -883,6 +903,7 @@ spec:
 ---
 # Links
 - [These slides](https://codecap.github.io/cloud-workshops/k8s-cluster-management.html)
+- [Kubernetes with kubeadm on Rocky Linux](https://phoenixnap.com/kb/install-kubernetes-on-rocky-linux)
 - [K0S](https://docs.k0sproject.io/stable/k0sctl-install/)
 - [K3S](https://docs.k3s.io/)
 - [operatorhub.io](https://operatorhub.io)
