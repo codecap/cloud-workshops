@@ -29,18 +29,18 @@ paginate: true
 ---
 # Preparations
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
-Install and configure dnsmasq as desribed [here](https://codecap.github.io/cloud-workshops/k8s-addons.html#3)
-
+- Install and configure dnsmasq on the client node as desribed [here](https://codecap.github.io/cloud-workshops/k8s-addons.html#3)
+- Set Variables
 ```bash
 # on the client node
-IP_BASE="10.10.20"
-IP_C01="$IP_BASE.200"
-IP_M01="$IP_BASE.101"
-IP_M02="$IP_BASE.102"
-IP_M03="$IP_BASE.103"
-IP_W01="$IP_BASE.141"
-IP_W02="$IP_BASE.142"
-IP_W03="$IP_BASE.143"
+IP_BASE="10.11.30"
+IP_START_FROM="100"
+IP_M01="$IP_BASE.$((IP_START_FROM + 0))"
+IP_M02="$IP_BASE.$((IP_START_FROM + 1))"
+IP_M03="$IP_BASE.$((IP_START_FROM + 2))"
+IP_W01="$IP_BASE.$((IP_START_FROM + 3))"
+IP_W02="$IP_BASE.$((IP_START_FROM + 4))"
+IP_W03="$IP_BASE.$((IP_START_FROM + 5))"
 MY_USER=rocky
 ```
 ---
@@ -89,7 +89,7 @@ ln -s ~/.arkade/bin/kubectl ~/bin/kubectl
 ---
 # Preparations
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
-__krew - get plugins for kubectl__
+__[krew](https://krew.sigs.k8s.io/docs/user-guide/setup/install/) - get plugins for kubectl__
 
 ```bash
 # on client node
@@ -296,7 +296,7 @@ k0sctl reset --config ~/k0sctl.yaml
 ```
 
 ---
-# k3s
+# K3S
 ![bg right:60% 50%](https://k3s.io/img/k3s-logo-light.svg)
 ```bash
 # on client node
@@ -331,13 +331,19 @@ done
 
 mkdir  -p ~/.kube
 mv ~/kubeconfig ~/.kube/config
+
+# TODO: howto remove
+# server
+/usr/local/bin/k3s-uninstall.sh
+# agent
+/usr/local/bin/k3s-agent-uninstall.sh/usr/local/bin/k3s-agent-uninstall.sh
 ```
 
 ---
 # OLM
 Operator Lifecycle Manager
 [operatorhub.io](https://operatorhub.io)
-[Docs](https://olm.operatorframework.io/docs/getting-started/0)
+[Docs](https://olm.operatorframework.io/docs/getting-started/)
 ![bg right:50% 75%](https://olm.operatorframework.io/images/logo.svg)
 ```bash
 # on client node
@@ -355,6 +361,11 @@ kubectl -n operators get installplans
 kubectl -n olm get packagemanifest 
 
 ```
+---
+# Monitoring
+[Prometheus Crash Course](https://www.youtube.com/watch?v=BEBsuA5tgUU)
+![bg right:50% 80%](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*7thrW4Wa5y6b03PxtPlQzA.jpeg)
+
 ---
 # Monitoring
 [Prometheus Operator](https://prometheus-operator.dev/docs/getting-started/introduction/)
@@ -383,8 +394,7 @@ EOF
 ```
 ---
 # Monitoring
-[Prometheus Crash Course](https://www.youtube.com/watch?v=BEBsuA5tgUU)
-![bg right:50% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
+![bg right:50% 90%](https://picluster.ricsanfre.com/assets/img/prometheus-stack-architecture.png )
 __Try to create a prometheus instance__
 ```bash
 kubectl apply -f - <<EOF
@@ -411,11 +421,25 @@ kubectl -n monitoring delete prometheus prom-a
 __Install and configure__
 ![bg right:50% 50%](https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/refs/heads/main/Documentation/logos/prometheus-operator-logo.svg)
 ```bash
+#
+# This repository collects Kubernetes manifests, Grafana dashboards, 
+# and Prometheus rules combined with documentation and scripts to provide
+# easy to operate end-to-end Kubernetes cluster monitoring with Prometheus
+# using the Prometheus Operator.
+#
 git clone https://github.com/prometheus-operator/kube-prometheus.git
 cd kube-prometheus/
 git checkout remotes/origin/release-0.13
 
+#
+# Apply all manifests in the directory
+#
 kubectl apply -f manifests/
+
+#
+# There are default network policies, which deny access from outside
+# For ease of this presentation we just remove them
+#
 for f in  manifests/{alertmanager,grafana,prometheus}-networkPolicy.yaml
 do
   kubectl delete -f $f
@@ -488,14 +512,14 @@ EOF
 ```
 ---
 # Export Monitoring Data
-![bg right:50% 80%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*H3nzCLJvta-Qj1CXimwOkA.png)
+![bg right:40% 90%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*H3nzCLJvta-Qj1CXimwOkA.png)
 [Remote Write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 With remote write, data is pushed out from Prometheus to other systems.
 
 ---
 # Export Monitoring Data
 [Federation](https://prometheus.io/docs/prometheus/latest/federation/)
-![bg right:50% 60%](https://last9.ghost.io/content/images/size/w1000/2024/01/Prometheus_Federation_Federated_Architecture.jpg)
+![bg right:40% 80%](https://last9.ghost.io/content/images/size/w1000/2024/01/Prometheus_Federation_Federated_Architecture.jpg)
 With federation, a Prometheus server pulls data from other Prometheus servers.
 
 ---
@@ -533,7 +557,7 @@ curl -D- -G --data-urlencode 'match[]={job=~".+", __name__="kube_deployment_crea
 ---
 # Export Monitoring Data
 ![bg right:40% 30%](https://upload.wikimedia.org/wikipedia/commons/3/38/Prometheus_software_logo.svg) 
-__Pull data from in-cluster your global prometheus instance__
+__Pull data from in-cluster to your global prometheus instance__
 ```bash
 # on client node
 cat <<EOF | sudo tee /etc/prometheus/prometheus.yml 
@@ -555,6 +579,268 @@ systemctl enable --now  prometheus
 
 ---
 # Logging
+ElasticSearch + Logstash + Kibana = ELK Stack
+![bg right:50% 70%](https://elastic-stack.readthedocs.io/en/latest/_images/elk_overview.png)
+
+[What is ELK Stack](https://www.youtube.com/watch?v=jT-y6oS10jk)
+
+---
+# Container Logs
+![bg right:50% 70%](https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fks09mcjba5dt4tik7ie7.png)
+```bash
+# log in to a cluster node
+kubectl get nodes
+kubectl node-shell [NODE_NAME]
+# on the node review log dir
+ls -lh /var/log/containers
+```
+
+---
+# Logging Operator
+![bg right:50% 70%](https://github.com/OT-CONTAINER-KIT/logging-operator/raw/master/static/logging-operator-arc.png)
+```bash
+kubectl apply -f - <<EOF
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: my-logging-operator
+  namespace: operators
+spec:
+  channel: beta
+  name: logging-operator
+  source: operatorhubio-catalog
+  sourceNamespace: olm
+EOF
+```
+
+---
+# Logging - ElasticSearch
+![bg right:50% 90%](https://github.com/OT-CONTAINER-KIT/logging-operator/blob/master/static/es-architecture.png?raw=true)
+```bash
+kubectl create ns logging
+
+kubectl apply -f - <<EOF
+---
+apiVersion: logging.logging.opstreelabs.in/v1beta1
+kind: Elasticsearch
+metadata:
+  name:      elasticsearch
+  namespace: logging
+spec:
+  esClusterName: prod
+  esVersion:     7.17.27
+EOF
+```
+---
+# Logging - Kibana
+![bg right:50% 70%](https://github.com/OT-CONTAINER-KIT/logging-operator/blob/master/static/kibana-architecture.png?raw=true)
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: logging.logging.opstreelabs.in/v1beta1
+kind: Kibana
+metadata:
+  name:      kibana
+  namespace: logging
+spec:
+  replicas: 1
+  esCluster:
+    host:        http://elasticsearch-master:9200
+    esVersion:   7.17.27
+    clusterName: elasticsearch
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name:      kibana
+  namespace: logging
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: kibana.tst.k8s.mycompany.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: kibana
+            port:
+              name: http
+        path: /
+        pathType: ImplementationSpecific
+EOF
+```
+---
+# Logging - Fluentd
+![bg right:50% 70%](https://github.com/OT-CONTAINER-KIT/logging-operator/blob/master/static/kibana-architecture.png?raw=true) 
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fluentd
+  namespace: logging
+  labels:
+    app: fluentd
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fluentd
+  labels:
+    app: fluentd
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluentd
+roleRef:
+  kind: ClusterRole
+  name: fluentd
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: fluentd
+  namespace: logging
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: logging
+  labels:
+    app: fluentd
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      serviceAccount: fluentd
+      serviceAccountName: fluentd
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: fluentd
+        image: fluent/fluentd-kubernetes-daemonset:v1.16-debian-elasticsearch7-1
+        env:
+          - name:  FLUENT_ELASTICSEARCH_HOST
+            value: "elasticsearch-master"
+          - name:  FLUENT_ELASTICSEARCH_PORT
+            value: "9200"
+          - name: FLUENT_ELASTICSEARCH_SCHEME
+            value: "http"
+          - name: FLUENTD_SYSTEMD_CONF
+            value: disable
+          - name: FLUENT_CONTAINER_TAIL_EXCLUDE_PATH
+            value: /var/log/containers/fluent*
+          - name: FLUENT_CONTAINER_TAIL_PARSER_TYPE
+            value: /^(?<time>.+) (?<stream>stdout|stderr)( (?<logtag>.))? (?<log>.*)$/
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+EOF
+```
+---
+# Review Logs in Kibana
+![bg right:35% 90%](https://assets.digitalocean.com/articles/kubernetes_efk/kibana_logs.png) 
+http://kibana.tst.k8s.mycompany.com
+
+Discover ➡ Create Index Pattern ➡ logstash-*
+
+---
+# Logging - Export Data
+__Cross Cluster Replication__
+![bg right:45% 70%](https://www.elastic.co/docs/deploy-manage/images/elasticsearch-reference-ccr-arch-central-reporting.png) 
+
+---
+# Logging - Export Data
+__Reindexing with Logstash__
+![bg right:45% 70%](https://us1.discourse-cdn.com/flex019/uploads/mauve_hedgehog/original/2X/d/da3a38f00a0b837a2c576b2faa213b223b09e0f9.png)
+
+[Logstash Input Plugins](https://www.elastic.co/docs/reference/logstash/plugins/input-plugins)
+[Logstash Output Plugins](https://www.elastic.co/docs/reference/logstash/plugins/output-plugins)
+[Logstash with OpenSearch(in/out)](https://opensearch.org/blog/introducing-logstash-input-opensearch-plugin-for-opensearch/)
+[Logstash OpenSearch Input Plugin](https://github.com/opensearch-project/logstash-input-opensearch)
+[Logstash OpenSeatch Output Plugin](https://github.com/opensearch-project/logstash-output-opensearch)
+
+---
+# Logging - how to access source
+```yaml
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name:      elasticsearch-master
+  namespace: logging
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: elasticsearch-master.tst.k8s.mycompany.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: elasticsearch-master
+            port:
+              name: http
+        path: /
+        pathType: ImplementationSpecific
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: elasticsearch-master
+    role: master
+  name: elasticsearch-master-transport
+  namespace: logging
+spec:
+  ports:
+    - name: http
+      port: 9200
+      protocol: TCP
+      targetPort: 9200
+    - name: transport
+      port: 9300
+      protocol: TCP
+      targetPort: 9300
+  selector:
+    app: elasticsearch-master
+    role: master
+  type: LoadBalancer
+```
 
 ---
 # Persistancy
@@ -569,3 +855,32 @@ systemctl enable --now  prometheus
 # User Management
 
 ---
+
+
+
+---
+# Tasks
+- Create a multi-node cluster with kubeadm
+- Create a multi-node cluster with k0s
+- Create a multi-node cluster with k3s
+- Install [Addons](https://codecap.github.io/cloud-workshops/k8s-addons.html) if needed
+- Deploy Prometheus, Alertmanager and Grafana to monitor you k8s cluster
+- Deploy ELK Stack to collect logs
+- [deploy/change/scale/delete an application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
+- Review Monitoring Data for the deployed application
+- Review Logs for the deployed application
+- Access the application by ingress and service of type LoadBalancer
+
+---
+# Links
+- [These slides](https://codecap.github.io/cloud-workshops/k8s-cluster-management.html)
+- [K0S](https://docs.k0sproject.io/stable/k0sctl-install/)
+- [K3S](https://docs.k3s.io/)
+- [operatorhub.io](https://operatorhub.io)
+- [Open Lifecycle Manager](https://olm.operatorframework.io/docs/getting-started/)
+- [Prometheus](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://prometheus.io/&ved=2ahUKEwjM3-Ts35GNAxVm1QIHHSksC8IQFnoECBgQAQ&usg=AOvVaw2SXvTedblZYzyyTOzZ8Y5x)
+- [Prometheus Crash Course](https://www.youtube.com/watch?v=BEBsuA5tgUU)
+- [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus)
+- [ELK Stack](https://www.elastic.co/elastic-stack)
+- [What is ELK Stack](https://www.youtube.com/watch?v=jT-y6oS10jk)
+- [OpenSearch](https://opensearch.org/)
