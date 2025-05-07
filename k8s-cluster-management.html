@@ -41,24 +41,33 @@ IP_M03=<span class="hljs-string">&quot;<span class="hljs-variable">$IP_BASE</spa
 IP_W01=<span class="hljs-string">&quot;<span class="hljs-variable">$IP_BASE</span>.<span class="hljs-subst">$((IP_START_FROM + 3)</span>)&quot;</span>
 IP_W02=<span class="hljs-string">&quot;<span class="hljs-variable">$IP_BASE</span>.<span class="hljs-subst">$((IP_START_FROM + 4)</span>)&quot;</span>
 IP_W03=<span class="hljs-string">&quot;<span class="hljs-variable">$IP_BASE</span>.<span class="hljs-subst">$((IP_START_FROM + 5)</span>)&quot;</span>
-MY_USER=rocky
+MY_USER=deploy
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="3" style="" data-marpit-pagination-total="40" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="4" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="40" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://image.pngaaa.com/935/5527935-middle.png&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="4" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="4" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="40" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="preparations-1">Preparations</h1>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on the client node</span>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on every node as root</span>
+MY_USER=deploy
+useradd -m <span class="hljs-variable">$MY_USER</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$MY_USER</span> ALL=(ALL) NOPASSWD:ALL&quot;</span> &gt; /etc/sudoers.d/<span class="hljs-variable">$MY_USER</span>
+
+<span class="hljs-comment"># on the client node</span>
 ssh-keygen
 
 <span class="hljs-comment"># the output of the following command should be executed on every node</span>
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;echo \&quot;<span class="hljs-subst">$(cat ~/.ssh/id_rsa.pub)</span>\&quot; &gt;&gt; ~<span class="hljs-variable">$MY_USER</span>/.ssh/authorized_keys&quot;</span>
+<span class="hljs-built_in">cat</span> &lt;&lt;<span class="hljs-string">EOF
+#
+# please execute on every node
+#
+mkdir -p ~$MY_USER/.ssh; chmod 700 ~$MY_USER/.ssh;
+echo \&quot;$(cat ~/.ssh/id_rsa.pub)\&quot; &gt;&gt; ~$MY_USER/.ssh/authorized_keys; chmod 600 ~$MY_USER/.ssh/authorized_keys
+chown -R $MY_USER. ~$MY_USER/.ssh
+EOF</span>
 
-<span class="hljs-comment"># install arkade an client node as regular user</span>
+<span class="hljs-comment"># install arkade on client node as regular user</span>
 curl -sLS https://get.arkade.dev | sh; <span class="hljs-built_in">mkdir</span> -p  ~/.arkade/bin/; <span class="hljs-built_in">mv</span> arkade ~/.arkade/bin/
 <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;~/.arkade/bin/:$PATH&quot;&#x27;</span> &gt;&gt; ~/.bash_profile; <span class="hljs-built_in">source</span> ~/.bash_profile
 
-<span class="hljs-comment"># on every node as root</span>
-MY_USER=rocky
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$MY_USER</span> ALL=(ALL) NOPASSWD:ALL&quot;</span> &gt; /etc/sudoers.d/<span class="hljs-variable">$MY_USER</span>
 </code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="4" style="" data-marpit-pagination-total="40" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="5" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="40" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://image.pngaaa.com/935/5527935-middle.png&quot;);background-size:50%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="5" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="5" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="40" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">

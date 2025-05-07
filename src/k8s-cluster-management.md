@@ -41,25 +41,34 @@ IP_M03="$IP_BASE.$((IP_START_FROM + 2))"
 IP_W01="$IP_BASE.$((IP_START_FROM + 3))"
 IP_W02="$IP_BASE.$((IP_START_FROM + 4))"
 IP_W03="$IP_BASE.$((IP_START_FROM + 5))"
-MY_USER=rocky
+MY_USER=deploy
 ```
 ---
 # Preparations
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
 ```bash
+# on every node as root
+MY_USER=deploy
+useradd -m $MY_USER
+echo "$MY_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$MY_USER
+
 # on the client node
 ssh-keygen
 
 # the output of the following command should be executed on every node
-echo "echo \"$(cat ~/.ssh/id_rsa.pub)\" >> ~$MY_USER/.ssh/authorized_keys"
+cat <<EOF
+#
+# please execute on every node
+#
+mkdir -p ~$MY_USER/.ssh; chmod 700 ~$MY_USER/.ssh;
+echo \"$(cat ~/.ssh/id_rsa.pub)\" >> ~$MY_USER/.ssh/authorized_keys; chmod 600 ~$MY_USER/.ssh/authorized_keys
+chown -R $MY_USER. ~$MY_USER/.ssh
+EOF
 
-# install arkade an client node as regular user
+# install arkade on client node as regular user
 curl -sLS https://get.arkade.dev | sh; mkdir -p  ~/.arkade/bin/; mv arkade ~/.arkade/bin/
 echo 'export PATH="~/.arkade/bin/:$PATH"' >> ~/.bash_profile; source ~/.bash_profile
 
-# on every node as root
-MY_USER=rocky
-echo "$MY_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$MY_USER
 ```
 
 
