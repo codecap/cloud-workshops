@@ -615,7 +615,7 @@ EOF
 
 ---
 # Logging - ElasticSearch
-![bg right:50% 90%](https://github.com/OT-CONTAINER-KIT/logging-operator/blob/master/static/es-architecture.png?raw=true)
+![bg right:45% 90%](https://github.com/OT-CONTAINER-KIT/logging-operator/blob/master/static/es-architecture.png?raw=true)
 ```bash
 kubectl create ns logging
 
@@ -866,7 +866,7 @@ spec:
 - Install [Addons](https://codecap.github.io/cloud-workshops/k8s-addons.html) if needed
 - Deploy Prometheus, Alertmanager and Grafana to monitor you k8s cluster
 - Deploy ELK Stack to collect logs
-- [deploy/change/scale/delete an application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
+- Deploy/Change/Scale/Celete a [staless application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
 - Review Monitoring Data for the deployed application
 - Review Logs for the deployed application
 - Access the application by ingress and service of type LoadBalancer
