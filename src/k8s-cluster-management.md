@@ -42,6 +42,7 @@ su - $MY_USER
 ssh-keygen
 
 # the output of the following command should be executed on every node
+MY_USER=deploy
 cat <<EOF
 #
 # please execute on every node as regular user

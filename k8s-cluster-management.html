@@ -39,6 +39,7 @@ su - <span class="hljs-variable">$MY_USER</span>
 ssh-keygen
 
 <span class="hljs-comment"># the output of the following command should be executed on every node</span>
+MY_USER=deploy
 <span class="hljs-built_in">cat</span> &lt;&lt;<span class="hljs-string">EOF
 #
 # please execute on every node as regular user
