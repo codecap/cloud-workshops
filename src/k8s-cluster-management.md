@@ -38,9 +38,10 @@ echo "$MY_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$MY_USER
 # on the client node, login as regular user
 su - $MY_USER
 
-# on the client node
+# on client node
 ssh-keygen
 
+#  on clien node
 # the output of the following command should be executed on every node
 MY_USER=deploy
 cat <<EOF
@@ -79,7 +80,7 @@ MY_USER=deploy
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
 __Some tools for your comfort__
 ```bash
-# on client node
+# on client node as regular user
 sudo dnf install 'dnf-command(config-manager)'
 sudo dnf config-manager --add-repo https://kubecolor.github.io/packages/rpm/kubecolor.repo
 sudo dnf install -y kubecolor bash-completion
@@ -88,6 +89,7 @@ arkade get kubectl
 sudo ln -s ~/.arkade/bin/kubectl /usr/local/bin/
 kubectl completion bash | sudo tee -a /etc/profile.d/kubectl-completion.sh
 source /etc/profile
+mkidr ~/bin
 ln -s ~/.arkade/bin/kubectl ~/bin/kubectl
 ```
 

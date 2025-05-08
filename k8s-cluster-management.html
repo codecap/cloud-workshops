@@ -35,9 +35,10 @@ useradd -m <span class="hljs-variable">$MY_USER</span>
 <span class="hljs-comment"># on the client node, login as regular user</span>
 su - <span class="hljs-variable">$MY_USER</span>
 
-<span class="hljs-comment"># on the client node</span>
+<span class="hljs-comment"># on client node</span>
 ssh-keygen
 
+<span class="hljs-comment">#  on clien node</span>
 <span class="hljs-comment"># the output of the following command should be executed on every node</span>
 MY_USER=deploy
 <span class="hljs-built_in">cat</span> &lt;&lt;<span class="hljs-string">EOF
@@ -77,7 +78,7 @@ MY_USER=deploy
 <h1 id="preparations-2">Preparations</h1>
 <p><br />
 <strong>Some tools for your comfort</strong></p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node as regular user</span>
 <span class="hljs-built_in">sudo</span> dnf install <span class="hljs-string">&#x27;dnf-command(config-manager)&#x27;</span>
 <span class="hljs-built_in">sudo</span> dnf config-manager --add-repo https://kubecolor.github.io/packages/rpm/kubecolor.repo
 <span class="hljs-built_in">sudo</span> dnf install -y kubecolor bash-completion
@@ -86,6 +87,7 @@ arkade get kubectl
 <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">ln</span> -s ~/.arkade/bin/kubectl /usr/local/bin/
 kubectl completion bash | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> -a /etc/profile.d/kubectl-completion.sh
 <span class="hljs-built_in">source</span> /etc/profile
+mkidr ~/bin
 <span class="hljs-built_in">ln</span> -s ~/.arkade/bin/kubectl ~/bin/kubectl
 </code></pre>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client node</span>

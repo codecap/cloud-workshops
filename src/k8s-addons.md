@@ -64,11 +64,11 @@ echo "server=$MY_COMPANY_NAMESERVER" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.myco
 echo "interface=$MY_NIC" | sudo tee  -a  /etc/dnsmasq.d/tst.k8s.mycompany.com.conf 
 
 # tell NetworkManager to use local dnsmasq server
-nmcli c m ens192 ipv4.dns  "127.0.0.1"
+sudo nmcli c m ens192 ipv4.dns  "127.0.0.1"
 # sed -e "s/dns=.*/dns=$MY_IP;/" -i  /etc/NetworkManager/system-connections/ens192.nmconnection
-nmcli device reapply $MY_NIC
+sudo nmcli device reapply $MY_NIC
 
-systemctl enable --now dnsmasq
+sudo systemctl enable --now dnsmasq
 ```
 
 ---
