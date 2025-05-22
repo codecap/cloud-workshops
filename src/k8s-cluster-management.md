@@ -34,6 +34,7 @@ paginate: true
 MY_USER=deploy
 useradd -m $MY_USER
 echo "$MY_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$MY_USER
+timedatectl set-timezone UTC
 
 # on the client node, login as regular user
 su - $MY_USER
@@ -104,6 +105,7 @@ source ~/.bash_profile
 # Preparations
 ![bg right:50% 50%](https://image.pngaaa.com/935/5527935-middle.png)
 __[krew](https://krew.sigs.k8s.io/docs/user-guide/setup/install/) - get plugins for kubectl__
+[Plugins available](https://krew.sigs.k8s.io/plugins/)
 
 ```bash
 # on client node
@@ -262,8 +264,9 @@ __Reset__
 kubeadm reset --force
 rm -rf  /etc/kubernetes/manifests/*
 rm -rf  /etc/cni/net.d
-ctr -n k8s.io container  ls | grep runc | awk '{print $1}' | while read id; do ctr -n k8s.io container delete $id; done
-dnf remove -y containerd.io
+systemctl disable --now kubelet
+
+dnf remove -y containerd.io kubelet kubeadm kubectl
 reboot
 ```
 ---
@@ -301,6 +304,7 @@ EOF
 # k0s
 ![bg right:50% 50%](https://docs.k0sproject.io/stable/img/k0s-logo-2025-horizontal.svg#only-light)
 ```bash
+# on the client node
 k0sctl apply --config ~/k0sctl.yaml
 
 mkdir -p ~/.kube
@@ -367,9 +371,57 @@ mv ~/kubeconfig ~/.kube/config
 ```
 
 ---
+# Operators
+![bg right:50% 60%](https://miro.medium.com/v2/format:webp/1*IsSys2dTeU7cgWPXlpSMGA.png)
+Software extensions to Kubernetes to manage applications and their components.
+
+---
+# Operators
+![bg right:50% 75%](https://pushbuildtestdeploy.com/images/k8s-operators.png)
+
+* An extension of the Kubernetes API -  a way to interact with the cluster, with YAML files(CRDs).
+* A controller is needed to implement API calls(CRDs) and perform actions - create a Deployment, StatefulSet, run a job... __Its task is to maintain a state__.
+
+---
+# Operators
+
+* Check an example operator on [operatorhub.io](https://operatorhub.io)
+* Check Capability Level
+* Check GitHub Repo ond Maintainers
+* Check Custom Resource Definitions
+
+---
+# Custom Resource Definitions (CRDs)
+![bg right:50% 75%](https://raw.githubusercontent.com/kubernetes/community/refs/heads/master/icons/svg/resources/unlabeled/crd.svg)
+
+
+---
+# CRDs
+
+![bg right:50% 75%](https://www.cncf.io/wp-content/uploads/2022/07/k8s-operator.webp)
+
+[Extend the Kubernetes API with CustomResourceDefinitions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/)
+
+```bash
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: mariadb
+spec:
+  rootPasswordSecretKeyRef:
+    name: mariadb
+    key: password
+  database: mariadb
+  port: 3306
+  storage:
+    size: 1Gi
+  metrics:
+    enabled: true
+```
+
+---
 # OLM
 Operator Lifecycle Manager
-[operatorhub.io](https://operatorhub.io)
 [Docs](https://olm.operatorframework.io/docs/getting-started/)
 ![bg right:50% 75%](https://olm.operatorframework.io/images/logo.svg)
 ```bash
@@ -605,8 +657,7 @@ scrape_configs:
         - 'prometheus.tst.k8s.mycompany.com'
 EOF
 sudo systemctl enable --now  prometheus
-# test by visiting
-$MY_IP:9090
+# test by visiting $MY_IP:9090
 ```
 
 ---
@@ -875,8 +926,15 @@ spec:
 ```
 
 ---
-# Persistancy
+# Persistance
+```bash
+kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/common.yaml
+kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/operator.yaml
+kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/cluster.yaml
 
+kubectl krew install rook-ceph
+kubectl rook-ceph ceph -s
+```
 ---
 # Cert manager + ingress
 
