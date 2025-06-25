@@ -1016,7 +1016,7 @@ EOF
 
 ---
 # Cert manager - in Action
-![bg right:45% 80%](https://cert-manager.io/images/high-level-overview.svg)
+![bg right:40% 90%](https://cert-manager.io/images/high-level-overview.svg)
 
 ```bash
 kubectl apply -f - <<EOF
@@ -1064,8 +1064,6 @@ curl https://grafana.vnt.k8s.works.sckt.net -v
 ```bash
 # as root on client add conf file for dnsmasq
 DO_NAMESERVER=$(dig ns1.digitalocean.com +noall +answer  | awk '{print $NF}')
-
-
 echo "server=/k8s.works.sckt.net/$DO_NAMESERVER" > /etc/dnsmasq.d/k8s.works.sckt.net.conf
 systemctl restart dnsmasq.service
 
