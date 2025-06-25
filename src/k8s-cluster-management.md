@@ -435,6 +435,7 @@ kubectl -n olm get ClusterServiceVersion
 kubectl -n olm get catalogsource
 kubectl -n operators get subscriptions
 kubectl -n operators get installplans
+kubectl -n operators get clusterserviceversions
 
 # list of available operators
 kubectl -n olm get packagemanifest 
@@ -489,6 +490,7 @@ EOF
 # check
 kubectl -n operators  get subscription
 kubectl -n operators  get installplans
+kubectl -n operators  get clusterserviceversions
 kubectl -n monitoring get prometheus prom-a
 kubectl -n monitoring get pods
 # remove
@@ -694,6 +696,11 @@ spec:
   source: operatorhubio-catalog
   sourceNamespace: olm
 EOF
+
+# check
+kubectl -n operators get subscription
+kubectl -n operators get installplans
+kubectl -n operators get clusterserviceversions
 ```
 
 ---
@@ -925,28 +932,619 @@ spec:
   type: LoadBalancer
 ```
 
+
+---
+# Cert manager
+![bg right:45% 40%](https://raw.githubusercontent.com/cert-manager/cert-manager/d53c0b9270f8cd90d908460d69502694e1838f5f/logo/logo-small.png)
+
+[Cert Manager - Intro (first 4 min)](https://www.youtube.com/watch?v=Xv1bdeVnGGY)
+[Cert Manager Issuer](https://cert-manager.io/docs/configuration/acme/#dns-zones)
+[Let's Encrypt - Challenge Types](https://letsencrypt.org/docs/challenge-types/)
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: my-cert-manager
+  namespace: operators
+spec:
+  channel: stable
+  name: cert-manager
+  source: operatorhubio-catalog
+  sourceNamespace: olm
+EOF
+```
+
+---
+# Cert manager - Conf
+![bg right:45% 80%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*x_eHjJCn8euTNF6hFTuVZA.png)
+
+```bash
+# We have to patch ClusterServiceVersion to activate DNS01 challange type
+CERT_MANAGERR_CURRENT_CSV=$(kubectl get subscriptions.operators.coreos.com  my-cert-manager -ojsonpath --template  "{.status.currentCSV}")
+
+kubectl get csv $CERT_MANAGERR_CURRENT_CSV -ojson | jq .spec.install.spec.deployments[0]
+
+kubectl patch csv $CERT_MANAGERR_CURRENT_CSV -n operators --type "json" -p '[
+{"op":"add","path":"/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/-","value":"--dns01-recursive-nameservers-only"},
+{"op":"add","path":"/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/-","value":"--dns01-recursive-nameservers=ns1.digitalocean.com:53"}
+]'
+
+kubectl get csv $CERT_MANAGERR_CURRENT_CSV -ojson | jq .spec.install.spec.deployments[0]
+
+# cert-manager operator should be now redeployed
+# check
+kubectl -n operators get subscription
+kubectl -n operators get installplans
+kubectl -n operators get clusterserviceversions
+
+MY_CLUSTER_SHORTCUT='[PUT_YOURS!]'
+MY_DOMAIN="$MY_CLUSTER_SHORTCUT.k8s.works.sckt.net"
+
+kubectl apply -f - <<EOF
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-production
+  namespace: operators
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@$MY_DOMAIN
+    privateKeySecretRef:
+      name: letsencrypt-production
+    solvers:
+    - dns01:
+        digitalocean:
+          tokenSecretRef:
+            name: digitalocean-dns
+            key: access-token
+      selector:
+        dnsZones:
+        - '$MY_DOMAIN'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: digitalocean-dns
+  namespace: operators
+data:
+  access-token: "$(echo -n $MY_DO_TOKEN | base64 -w0)"
+EOF
+```
+
+---
+# Cert manager - in Action
+![bg right:45% 80%](https://cert-manager.io/images/high-level-overview.svg)
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-tls
+  namespace: monitoring
+  annotations:
+    ingress.kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-production
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - grafana.$MY_DOMAIN
+      secretName: grafana-tls
+  rules:
+    - host: grafana.$MY_DOMAIN
+      http:
+        paths:
+        - backend:
+            service:
+              name: grafana
+              port:
+                name: http
+          path: /
+          pathType: ImplementationSpecific
+EOF
+
+# check
+kubectl get secret grafana-tls  -oyaml
+kubectl get secret grafana-tls -ojson | jq '.data["tls.crt"]' -Mr | base64 -d
+kubectl get secret grafana-tls -ojson | jq '.data["tls.crt"]' -Mr | base64 -d | openssl x509 -text -noout
+
+curl https://grafana.vnt.k8s.works.sckt.net -v
+```
+
+---
+# External DNS
+![bg right:45% 70%](https://github.com/kubernetes-sigs/external-dns/raw/master/docs/img/external-dns.png)
+
+[external-dns](https://kubernetes-sigs.github.io/external-dns/latest/charts/external-dns/)
+```bash
+# as root on client add conf file for dnsmasq
+DO_NAMESERVER=$(dig ns1.digitalocean.com +noall +answer  | awk '{print $NF}')
+
+
+echo "server=/k8s.works.sckt.net/$DO_NAMESERVER" > /etc/dnsmasq.d/k8s.works.sckt.net.conf
+systemctl restart dnsmasq.service
+
+# as regular user on client
+MY_CLUSTER_SHORTCUT='[PUT_YOURS!]'
+MY_DOMAIN="$MY_CLUSTER_SHORTCUT.k8s.works.sckt.net"
+helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
+helm upgrade external-dns external-dns/external-dns  -n operators --install -f - <<EOF
+provider: 
+  name: digitalocean
+sources: [ingress]
+rbac:
+  create: true
+policy: upsert-only
+domainFilters: [$(echo $MY_DOMAIN | awk  -F . '{print $(NF-1)"."$NF}')]
+env:
+  - name: DO_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: digitalocean-dns  
+        key: access-token
+#txtOwnerId: "externaldns"
+managedRecordTypes: ['A']
+logLevel: debug
+EOF
+
+# check dns entries
+MY_DO_TOKEN="[YOUR_TOKEN]"
+arkade get doctl
+doctl auth init --access-token $MY_DO_TOKEN
+doctl compute domain records list sckt.net
+```
+
+
+
+---
+# Certificate and DNS Management
+![bg right:45% 90%](https://jirak.net/wp/wp-content/uploads/2022/11/self-service-DNS-certs-K8s_challenge.png)
+
+
 ---
 # Persistance
 ```bash
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/common.yaml
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/operator.yaml
+
+kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/crds.yaml
+
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/cluster.yaml
 
 kubectl krew install rook-ceph
 kubectl rook-ceph ceph -s
-```
+
+# set dashboard via http
+# kubectl edit CephCluster rook-ceph
+#   dashboard:
+#     enabled: true
+#     port: 8080
+#     ssl: false
+
+
+
+# TODO: dashboard access no verified
+kubectl apply -f - <<EOF
 ---
-# Cert manager + ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name:      ceph-dashboard
+  namespace: rook-ceph
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: ceph-dashboard.tst.k8s.mycompany.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: rook-ceph-mgr-dashboard
+            port:
+              name: http-dashboard
+        path: /
+        pathType: ImplementationSpecific
+EOF
+
+# visit
+ceph-dashboard.tst.k8s.mycompany.com
+
+# get pasword for login
+kubectl get secret rook-ceph-dashboard-password -ojson | jq  -Mr .data.password | base64 -d
+
+
+# Create new staoge classes
+kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/csi/rbd/storageclass.yaml
+kubectl apply -f https://raw.githubusercontent.com/rook/rook/refs/tags/v1.17.1/deploy/examples/filesystem.yaml
+kubectl apply -f https://raw.githubusercontent.com/rook/rook/refs/tags/v1.17.1/deploy/examples/csi/cephfs/storageclass.yaml
+kubectl get storageclass
+
+# set a new staoge class to be the default one
+kubectl annotate storageclass local-path       storageclass.kubernetes.io/is-default-class=false --overwrite
+kubectl annotate storageclass rook-ceph-block  storageclass.kubernetes.io/is-default-class=true  --overwrite
+
+
+# TODO: deffiernce between ceph-block and cephfs
+
+# deploy a test application to use persitancy via PVCs
+
+# ReadWriteOnce
+kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rbd-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: rook-ceph-block
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        volumeMounts:
+         - name: mypvc
+           mountPath: /var/lib/www/html
+      volumes:
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: rbd-pvc
+            readOnly: false
+EOF
+
+# ReadWriteMany
+kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rbd-pvc
+spec:
+  accessModes:
+    # - ReadWriteOnce
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: rook-cephfs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        volumeMounts:
+         - name: mypvc
+           mountPath: /var/lib/www/html
+      volumes:
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: rbd-pvc
+            readOnly: false
+EOF
+
+```
+
+
+# PV and PVC
+
+# Storage Classes
+
+# Access Modes
+* ReadWriteOnce (RWO) – The volume is mounted with read-write access for a single Node in your cluster. Any of the Pods running on that Node can read and write the volume’s contents.
+* ReadOnlyMany (ROX) – The volume can be concurrently mounted to any of the Nodes in your cluster, with read-only access for any Pod.
+* ReadWriteMany (RWX) – Similar to ReadOnlyMany, but with read-write access.
+* ReadWriteOncePod (RWOP) – This new variant, introduced as a beta feature in Kubernetes v1.27, enforces that read-write access is provided to a single Pod. No other Pods in the cluster will be able to use the volume simultaneously.
+
+# Reclaim Policies
+* Retain
+* Delete
+
+
+# Volume Binding Modes
+
+* WaitForFirstConsumer
+* Immediate
+
+# Expanding Volumes
+
+# Container Storage Interface (CSI)
+
+# Snaptshots
+https://blog.palark.com/kubernetes-snaphots-usage/
+
+# Provisioning Volumes from Snapshots
+
+
+
+
+
+
+
+
+
+[Volume Types](https://kubernetes.io/docs/concepts/storage/volumes/#image)
+
+
+
+![bg right:35% 90%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*kbU4pDL2X1CDPWRofADmMg.png)
+
+
 
 ---
 # Backup and Recovery
-
+* Velero
+* Ark
+* Kasten K10
 ---
 # User Management
 
+
+[k8s Auth](https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
+[k8s authentication with KeyCloak OIDC](https://medium.com/@amirhosseineidy/kubernetes-authentication-with-keycloak-oidc-63571eaeed61)
+[Prepare KeyCloak](https://geek-cookbook.funkypenguin.co.nz/recipes/kubernetes/keycloak/)
+[k3s with KeyCloak](https://geek-cookbook.funkypenguin.co.nz/kubernetes/oidc-authentication/k3s-keycloak/#)
+[JWT Debugger](https://jwt.io/)
+[cleint id & client secret](https://stackoverflow.com/questions/44752273/do-keycloak-clients-have-a-client-secret/69726692#69726692)
+
+```bash
+CP_URL=$(kubectl cluster-info  | grep "control" | awk '{print $NF}')
+
+helm repo add permission-manager https://sighupio.github.io/permission-manager
+helm upgrade --install --namespace permission-manager --create-namespace  permission-manager permission-manager/permission-manager -f - <<EOF
+ingress:
+  enabled: true
+  annotations:
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: my-cluster-issuer
+  hosts:
+    - host: permission-manager.tst.k8s.mycompany.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+image:
+  tag: "v1.9.0"
+config:
+  clusterName: "tst"
+  controlPlaneAddress: "$CP_URL"
+  basicAuthPassword: "password"
+EOF
+```
+
+
+# KeyCloak
+[KeyCLoak Basic Deployment](https://www.keycloak.org/operator/basic-deployment)
+
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-keycloak-operator
 ---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: operatorgroup
+  namespace: my-keycloak-operator
+spec:
+  targetNamespaces:
+  - my-keycloak-operator
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: my-keycloak-operator
+  namespace: my-keycloak-operator
+spec:
+  channel: fast
+  name: keycloak-operator
+  source: operatorhubio-catalog
+  sourceNamespace: olm
+EOF
+
+```
 
 
+
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-db-secret
+  namespace: my-keycloak-operator
+data:
+  password: $(echo -n admin    | base64 -w0)
+  username: $(echo -n password | base64 -w0)
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-db
+spec:
+  serviceName: postgresql-db-service
+  selector:
+    matchLabels:
+      app: postgresql-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgresql-db
+    spec:
+      containers:
+        - name: postgresql-db
+          image: postgres:15
+          volumeMounts:
+            - mountPath: /data
+              name: cache-volume
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key:  username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key:  password
+            - name: PGDATA
+              value: /data/pgdata
+            - name: POSTGRES_DB
+              value: keycloak
+      volumes:
+        - name: cache-volume
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-db
+spec:
+  selector:
+    app: postgresql-db
+  ports:
+  - port: 5432
+    targetPort: 5432
+EOF
+
+```
+
+
+
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: example-kc
+spec:
+  instances: 1
+  db:
+    vendor: postgres
+    host: postgres-db
+    usernameSecret:
+      name: keycloak-db-secret
+      key: username
+    passwordSecret:
+      name: keycloak-db-secret
+      key: password
+  http:
+    tlsSecret: keycloak-tls
+  hostname:
+    hostname: keycloak.$MY_DOMAIN
+  ingress:
+    enabled: true
+    className: traefik
+    annotations:
+      ingress.kubernetes.io/tls-acme: "true"
+      cert-manager.io/cluster-issuer: letsencrypt-production
+  proxy:
+    headers: xforwarded # double check your reverse proxy sets and overwrites the X-Forwarded-* headers
+
+
+# TODO: pathc ingress with tls
+EOF
+
+
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: keycloak
+    app.kubernetes.io/instance: example-kc
+    app.kubernetes.io/managed-by: keycloak-operator
+  name: example-kc-service-lb
+  namespace: my-keycloak-operator
+spec:
+  type: LoadBalancer
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  - name: management
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    app: keycloak
+    app.kubernetes.io/instance: example-kc
+    app.kubernetes.io/managed-by: keycloak-operator
+EOF
+
+
+
+
+# on servers
+cat > /etc/rancher/k3s/config.yaml <<EOF
+kube-apiserver-arg:
+- "oidc-issuer-url=https://keycloak.vna.k8s.works.sckt.net:8443/auth/realms/master/"
+- "oidc-client-id=kube-apiserver"
+- "oidc-username-claim=email"
+- "oidc-groups-claim=groups"
+EOF
+systemctl restart k3s
+
+
+# client
+
+kubectl krew install oidc-login
+kubectl oidc-login setup --oidc-issuer-url=https://keycloak.vna.k8s.works.sckt.net:8443/auth/realms/maste --oidc-client-id=kube-apiserver --oidc-client-secret=test
+
+
+```
+
+
+
+
+---
+# GitOps
+https://tecadmin.net/building-a-gitops-workflow-with-kubernetes-and-argocd/
 
 ---
 # Tasks
@@ -964,6 +1562,8 @@ kubectl rook-ceph ceph -s
 ---
 # Links
 - [These slides](https://codecap.github.io/cloud-workshops/k8s-cluster-management.html)
+- [kubectl cheatsheet](https://github.com/eon01/KubectlCheatSheet)
+- [kubectl Quick Reference](https://kubernetes.io/docs/reference/kubectl/quick-reference/)
 - [Kubernetes with kubeadm on Rocky Linux](https://phoenixnap.com/kb/install-kubernetes-on-rocky-linux)
 - [K0S](https://docs.k0sproject.io/stable/k0sctl-install/)
 - [K3S](https://docs.k3s.io/)
