@@ -1060,6 +1060,7 @@ curl https://grafana.vnt.k8s.works.sckt.net -v
 ![bg right:45% 70%](https://github.com/kubernetes-sigs/external-dns/raw/master/docs/img/external-dns.png)
 
 [external-dns](https://kubernetes-sigs.github.io/external-dns/latest/charts/external-dns/)
+[Providers](https://github.com/kubernetes-sigs/external-dns?tab=readme-ov-file#new-providers)
 ```bash
 # as root on client add conf file for dnsmasq
 DO_NAMESERVER=$(dig ns1.digitalocean.com +noall +answer  | awk '{print $NF}')
@@ -1575,3 +1576,7 @@ https://tecadmin.net/building-a-gitops-workflow-with-kubernetes-and-argocd/
 - [ELK Stack](https://www.elastic.co/elastic-stack)
 - [What is ELK Stack](https://www.youtube.com/watch?v=jT-y6oS10jk)
 - [OpenSearch](https://opensearch.org/)
+- [external-dns](https://kubernetes-sigs.github.io/external-dns/latest/charts/external-dns/)
+- [Providers](https://github.com/kubernetes-sigs/external-dns?tab=readme-ov-file#new-providers)
+- [Cert Manager - Intro](https://www.youtube.com/watch?v=Xv1bdeVnGGY)
+- [Let's Encrypt - Challenge Types](https://letsencrypt.org/docs/challenge-types/)
