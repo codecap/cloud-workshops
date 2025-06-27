@@ -22,8 +22,8 @@ paginate: true
 - 3 K8S Worker Nodes
 
 *Sizing (at least)*:
-- 2 CPU
-- 4 GB RAM
+- 4 CPU
+- 8 GB RAM
 - 40 GB Disk
 
 ---
@@ -869,6 +869,13 @@ http://kibana.tst.k8s.mycompany.com
 
 Discover ➡ Create Index Pattern ➡ logstash-*
 
+If there are no indexes created check the timzone on clusternodes:
+```bash
+timedatectl set-timezone UTC
+reboot
+```
+
+
 ---
 # Logging - Export Data
 __Cross Cluster Replication__
@@ -1322,7 +1329,9 @@ https://blog.palark.com/kubernetes-snaphots-usage/
 [Prepare KeyCloak](https://geek-cookbook.funkypenguin.co.nz/recipes/kubernetes/keycloak/)
 [k3s with KeyCloak](https://geek-cookbook.funkypenguin.co.nz/kubernetes/oidc-authentication/k3s-keycloak/#)
 [JWT Debugger](https://jwt.io/)
-[cleint id & client secret](https://stackoverflow.com/questions/44752273/do-keycloak-clients-have-a-client-secret/69726692#69726692)
+[client id & client secret](https://stackoverflow.com/questions/44752273/do-keycloak-clients-have-a-client-secret/69726692#69726692)
+[Step by Step - Using Keycloak Authentication in OpenShift](https://blog.stderr.at/openshift/2025/05/step-by-step-using-keycloak-authentication-in-openshift/)
+[AuthN/AuthZ with OIDC](https://medium.com/@mrbobbytables/kubernetes-day-2-operations-authn-authz-with-oidc-and-a-little-help-from-keycloak-de4ea1bdbbe)
 
 ```bash
 CP_URL=$(kubectl cluster-info  | grep "control" | awk '{print $NF}')
@@ -1348,6 +1357,18 @@ config:
 EOF
 ```
 
+
+```bash
+cat > /etc/rancher/k3s/config.yaml <<EOF
+kube-apiserver-arg:
+- "oidc-issuer-url=https://keycloak.vna.k8s.works.sckt.net:8443/auth/realms/master/"
+- "oidc-client-id=kube-apiserver"
+- "oidc-username-claim=email"
+- "oidc-groups-claim=groups"
+- "oidc-username-prefix=oidc"
+- "oidc-groups-prefix=oidc"
+EOF
+```
 
 # KeyCloak
 [KeyCLoak Basic Deployment](https://www.keycloak.org/operator/basic-deployment)
@@ -1451,7 +1472,41 @@ EOF
 
 ```
 
+# Autorization
 
+[K8S Authorization - User Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles)
+
+## roles/clusterroles
+## rolebindings/clusterrolebindings
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: operations
+subjects:
+# You can specify more than one "subject"
+- kind: User
+  name: oidc:operations@works.sckt.net
+  apiGroup: rbac.authorization.k8s.io
+- kind: Group
+  name: oidc:operations
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole                   # this must be Role or ClusterRole
+  name: edit                          # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+EOF
+```
+
+
+
+## serviceaccoubts
+## users
+## cluster-admin
+## admin/edit/view
+## aggregate to
 
 
 ```bash

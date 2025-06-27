@@ -20,8 +20,8 @@
 </ul>
 <p><em>Sizing (at least)</em>:</p>
 <ul>
-<li>2 CPU</li>
-<li>4 GB RAM</li>
+<li>4 CPU</li>
+<li>8 GB RAM</li>
 <li>40 GB Disk</li>
 </ul>
 </section>
@@ -826,6 +826,10 @@ EOF</span>
 <p><br />
 <a href="http://kibana.tst.k8s.mycompany.com">http://kibana.tst.k8s.mycompany.com</a></p>
 <p>Discover <img class="emoji" draggable="false" alt="➡" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/27a1.svg" data-marp-twemoji=""/> Create Index Pattern <img class="emoji" draggable="false" alt="➡" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/27a1.svg" data-marp-twemoji=""/> logstash-*</p>
+<p>If there are no indexes created check the timzone on clusternodes:</p>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">timedatectl set-timezone UTC
+reboot
+</code></pre>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="35" style="" data-marpit-pagination-total="49" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="36" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:45%;" data-marpit-pagination-total="49" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://www.elastic.co/docs/deploy-manage/images/elasticsearch-reference-ccr-arch-central-reporting.png&quot;);background-size:70%;"></figure></div></section></foreignObject><foreignObject width="55%" height="720"><section id="36" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="36" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:45%;" data-marpit-pagination-total="49" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="logging---export-data">Logging - Export Data</h1>
@@ -1241,7 +1245,9 @@ EOF</span>
 <a href="https://geek-cookbook.funkypenguin.co.nz/recipes/kubernetes/keycloak/">Prepare KeyCloak</a><br />
 <a href="https://geek-cookbook.funkypenguin.co.nz/kubernetes/oidc-authentication/k3s-keycloak/#">k3s with KeyCloak</a><br />
 <a href="https://jwt.io/">JWT Debugger</a><br />
-<a href="https://stackoverflow.com/questions/44752273/do-keycloak-clients-have-a-client-secret/69726692#69726692">cleint id &amp; client secret</a></p>
+<a href="https://stackoverflow.com/questions/44752273/do-keycloak-clients-have-a-client-secret/69726692#69726692">client id &amp; client secret</a><br />
+<a href="https://blog.stderr.at/openshift/2025/05/step-by-step-using-keycloak-authentication-in-openshift/">Step by Step - Using Keycloak Authentication in OpenShift</a><br />
+<a href="https://medium.com/@mrbobbytables/kubernetes-day-2-operations-authn-authz-with-oidc-and-a-little-help-from-keycloak-de4ea1bdbbe">AuthN/AuthZ with OIDC</a></p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">CP_URL=$(kubectl cluster-info  | grep <span class="hljs-string">&quot;control&quot;</span> | awk <span class="hljs-string">&#x27;{print $NF}&#x27;</span>)
 
 helm repo add permission-manager https://sighupio.github.io/permission-manager
@@ -1262,6 +1268,16 @@ config:
   clusterName: &quot;tst&quot;
   controlPlaneAddress: &quot;$CP_URL&quot;
   basicAuthPassword: &quot;password&quot;
+EOF</span>
+</code></pre>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-built_in">cat</span> &gt; /etc/rancher/k3s/config.yaml &lt;&lt;<span class="hljs-string">EOF
+kube-apiserver-arg:
+- &quot;oidc-issuer-url=https://keycloak.vna.k8s.works.sckt.net:8443/auth/realms/master/&quot;
+- &quot;oidc-client-id=kube-apiserver&quot;
+- &quot;oidc-username-claim=email&quot;
+- &quot;oidc-groups-claim=groups&quot;
+- &quot;oidc-username-prefix=oidc&quot;
+- &quot;oidc-groups-prefix=oidc&quot;
 EOF</span>
 </code></pre>
 <h1 id="keycloak">KeyCloak</h1>
@@ -1357,6 +1373,34 @@ spec:
 EOF</span>
 
 </code></pre>
+<h1 id="autorization">Autorization</h1>
+<p><a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles">K8S Authorization - User Roles</a></p>
+<h2 id="rolesclusterroles">roles/clusterroles</h2>
+<h2 id="rolebindingsclusterrolebindings">rolebindings/clusterrolebindings</h2>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubectl apply -f - &lt;&lt;<span class="hljs-string">EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: operations
+subjects:
+# You can specify more than one &quot;subject&quot;
+- kind: User
+  name: oidc:operations@works.sckt.net
+  apiGroup: rbac.authorization.k8s.io
+- kind: Group
+  name: oidc:operations
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole                   # this must be Role or ClusterRole
+  name: edit                          # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+EOF</span>
+</code></pre>
+<h2 id="serviceaccoubts">serviceaccoubts</h2>
+<h2 id="users">users</h2>
+<h2 id="cluster-admin">cluster-admin</h2>
+<h2 id="admineditview">admin/edit/view</h2>
+<h2 id="aggregate-to">aggregate to</h2>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubectl apply -f - &lt;&lt;<span class="hljs-string">EOF
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak
