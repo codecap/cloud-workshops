@@ -1,0 +1,23 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: emojivoto
+  namespace: gitops-system
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  destination:
+    server:         https://kubernetes.default.svc
+  source:
+    repoURL:        https://github.com/BuoyantIO/emojivoto/
+    path:           kustomize/deployment
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - PruneLast=true
+    - CreateNamespace=false
+    - PrunePropagationPolicy=foreground

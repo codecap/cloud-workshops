@@ -1,0 +1,34 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-nginx
+  namespace: gitops-system
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  destination:
+    server:         https://kubernetes.default.svc
+    namespace:      ingress-nginx
+  source:
+    repoURL:        https://kubernetes.github.io/ingress-nginx
+    chart:          ingress-nginx
+    targetRevision: 4.12.3
+    helm:
+      valuesObject:
+        controller:
+          admissionWebhooks:
+            enabled: false
+          service:
+            ports:
+              http:  18080
+              https: 18443
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - PruneLast=true
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
