@@ -988,6 +988,7 @@ kubectl -n operators get clusterserviceversions
 
 MY_CLUSTER_SHORTCUT='[PUT_YOURS!]'
 MY_DOMAIN="$MY_CLUSTER_SHORTCUT.k8s.works.sckt.net"
+MY_DO_TOKEN="[YOUR_TOKEN]"
 
 kubectl apply -f - <<EOF
 apiVersion: cert-manager.io/v1
@@ -1059,7 +1060,7 @@ kubectl get secret grafana-tls  -oyaml
 kubectl get secret grafana-tls -ojson | jq '.data["tls.crt"]' -Mr | base64 -d
 kubectl get secret grafana-tls -ojson | jq '.data["tls.crt"]' -Mr | base64 -d | openssl x509 -text -noout
 
-curl https://grafana.vnt.k8s.works.sckt.net -v
+curl https://grafana.$MY_CLUSTER_SHORTCUT.k8s.works.sckt.net -v
 ```
 
 ---
@@ -1070,6 +1071,7 @@ curl https://grafana.vnt.k8s.works.sckt.net -v
 [Providers](https://github.com/kubernetes-sigs/external-dns?tab=readme-ov-file#new-providers)
 ```bash
 # as root on client add conf file for dnsmasq
+dnf install bind-utils -y # ensure we have dig command installed
 DO_NAMESERVER=$(dig ns1.digitalocean.com +noall +answer  | awk '{print $NF}')
 echo "server=/k8s.works.sckt.net/$DO_NAMESERVER" > /etc/dnsmasq.d/k8s.works.sckt.net.conf
 systemctl restart dnsmasq.service
@@ -1104,11 +1106,730 @@ doctl auth init --access-token $MY_DO_TOKEN
 doctl compute domain records list sckt.net
 ```
 
-
-
 ---
 # Certificate and DNS Management
 ![bg right:45% 90%](https://jirak.net/wp/wp-content/uploads/2022/11/self-service-DNS-certs-K8s_challenge.png)
+
+---
+# User Management
+
+---
+# Kubernetes Authenticaton
+![bg right:35% 50%](https://riteshmblog.wordpress.com/wp-content/uploads/2022/05/kubernetes-secret.jpg)
+- X509 client certificates
+- Static token file
+- Service account tokens
+- OpenID Token
+- Authenticating Proxy
+- Anonymous request
+
+---
+# Kubernetes Authorization
+![bg right:35% 50%](https://riteshmblog.wordpress.com/wp-content/uploads/2022/05/kubernetes-secret.jpg)
+- Username
+- Groupname
+- Extrafields
+
+---
+# Authentication by Certificates
+![bg right:35% 50%](https://riteshmblog.wordpress.com/wp-content/uploads/2022/05/kubernetes-secret.jpg)
+```bash
+# create a new key
+openssl genrsa -out myuser-key.pem 2048
+
+# creqte a CSR
+openssl req -new -key myuser-key.pem -out myuser-csr.pem -subj "/CN=myuser/O=team-a/O=team-b"
+
+# create CertificateSigningRequest in K8S
+kubectl apply -f - <<EOF
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: myuser
+spec:
+  request: $(cat myuser-csr.pem  | base64 -w0)
+  signerName: kubernetes.io/kube-apiserver-client
+  expirationSeconds: 86400  # one day
+  usages:
+  - client auth
+EOF
+kubectl certificate approve myuser
+kubectl get csr myuser -o yaml
+
+# extract the certifcate
+kubectl get csr myuser -o jsonpath='{.status.certificate}'  | base64 -d > myuser-crt.pem
+# review certifcate
+openssl x509 -text -noout -in myuser-crt.pem
+
+
+kubectl config set-credentials myuser \
+  --client-key=myuser-key.pem  \
+  --client-certificate=myuser-crt.pem  \
+  --embed-certs=true
+```
+---
+# Authorization by Certificates
+![bg right:35% 50%](https://riteshmblog.wordpress.com/wp-content/uploads/2022/05/kubernetes-secret.jpg)
+
+```bash
+# Review roles defined
+kubectl get roles  -A 
+kubectl get clusterroles
+# create a binding
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: myuser-admin
+subjects:
+- kind: User
+  name: myuser
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: admin
+  apiGroup: rbac.authorization.k8s.io
+EOF
+# show the current user
+kubectl krew install whoami
+kubectl whoami
+# set current user to myuser
+kubectl config  set-context --current --user myuser
+# test
+kubectl whoami
+kubectl get pods
+
+```
+
+---
+# Predefined cluster roles
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/c-role.svg)
+[K8S Authorization - User Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles)
+
+Standard roles:
+- cluster-admin
+- admin
+- edit
+- view
+
+---
+# Service Accounts / Tokens
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/sa.svg)
+```bash
+kubectl -n default create serviceaccount jenkins
+MY_TOKEN=$(kubectl create token jenkins)
+
+kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jenkins
+  namespace: default
+  annotations:
+    kubernetes.io/service-account.name: "jenkins"
+type: kubernetes.io/service-account-token
+EOF
+
+# put the token into ~/.kube/config
+kubectl config set-credentials jenkins --token=$(kubectl get secrets jenkins -ojson  | jq .data.token -Mr  | base64 -d)
+# review the token
+kubectl get secrets jenkins -ojson  | jq .data.token -Mr  | base64 -d | awk -F . '{print $2}' | base64 -d | jq .
+
+# add permissons
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins
+  namespace: monitoring
+subjects:
+- kind: User
+  name: system:serviceaccount:default:jenkins
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
+# switch the user
+kubectl config  set-context --current --user jenkins
+
+# list some pods
+kubectl get pods -n monitoring  # should work
+kubeclt get pods -n kube-system # should not work
+```
+
+---
+# Service Accounts
+__usage within a pod__
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/sa.svg)
+```bash
+
+# Point to the internal API server hostname
+APISERVER=https://kubernetes.default.svc
+# Path to ServiceAccount token
+SERVICEACCOUNT=/var/run/secrets/kubernetes.io/serviceaccount
+# Read this Pod's namespace
+NAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)
+# Read the ServiceAccount bearer token
+TOKEN=$(cat ${SERVICEACCOUNT}/token)
+# Reference the internal certificate authority (CA)
+CACERT=${SERVICEACCOUNT}/ca.crt
+
+# Explore the API with TOKEN
+curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/api
+# list namespaces
+curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/api/v1/namespaces
+# list pods
+curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/api/v1/pods
+# list pods wihtin a namespace
+curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/api/v1/namespaces/kube-system/pods
+```
+
+
+--- 
+# Roles vs ClusterRoles
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/c-role.svg)
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/role.svg)
+```bash
+kubectl get roles  -A
+kubectl get clusterroles 
+
+kubectl get rolebindings -A
+kubectl get clusterrolebindings
+```
+
+
+---
+# Aggregated Roles
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/c-role.svg)
+```bash
+# review, take a look at permissions with crd
+kubectl get clusterrole view  -oyaml
+kubectl get clusterrole edit  -oyaml
+kubectl get clusterrole admin -oyaml
+
+# review, take a look at label rbac.authorization.k8s.io/aggregate-to-admin: "true"
+# it means, specific role will be aggreagated to another one
+kubectl get clusterroles  prometheuses.monitoring.coreos.com-v1-admin  -oyaml
+
+```
+
+---
+# KeyCloak
+![bg right:50% 50%](https://www.keycloak.org/resources/images/icon.svg)
+
+---
+# KeyCloak
+![bg right:35% 50%](https://www.keycloak.org/resources/images/icon.svg)
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-keycloak-operator
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: operatorgroup
+  namespace: my-keycloak-operator
+spec:
+  targetNamespaces:
+  - my-keycloak-operator
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: my-keycloak-operator
+  namespace: my-keycloak-operator
+spec:
+  channel: fast
+  name: keycloak-operator
+  source: operatorhubio-catalog
+  sourceNamespace: olm
+EOF
+```
+
+---
+# Certificate for KeyCloak
+![bg right:35% 50%](https://www.keycloak.org/resources/images/icon.svg)
+```bash
+MY_DOMAIN=tst.k8s.mycompany.com
+cat > keycloak-req.cnf <<EOF
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = keycloak.$MY_DOMAIN
+EOF
+
+openssl genrsa -out  keycloak-root-ca-key.pem
+openssl req -x509 -new -nodes -key keycloak-root-ca-key.pem \
+  -days 3650 -sha256 -out keycloak-root-ca.pem -subj "/CN=kube-ca"
+
+openssl genrsa -out keycloak-key.pem 2048
+
+openssl req -new -key keycloak-key.pem -out keycloak-csr.pem \
+  -subj "/CN=kube-ca" \
+  -sha256 -config keycloak-req.cnf
+
+openssl x509 -req -in keycloak-csr.pem \
+  -CA keycloak-root-ca.pem -CAkey keycloak-root-ca-key.pem \
+  -CAcreateserial -sha256 -out keycloak-crt.pem -days 3650 \
+  -extensions v3_req -extfile keycloak-req.cnf
+
+# put the certificate into keycloak-instance-tls secret
+kubectl create secret tls  keycloak-instance-tls \
+  --cert=keycloak-crt.pem \
+  --key=keycloak-key.pem
+```
+
+---
+# Create KeyCloak Instance
+![bg right:35% 50%](https://www.keycloak.org/resources/images/icon.svg)
+```bash
+MY_DOMAIN="tst.k8s.mycompany.com"
+kubectl apply -f - <<EOF
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak-instance
+spec:
+  instances: 1
+  hostname:
+    hostname: keycloak.$MY_DOMAIN
+  http:
+    tlsSecret: keycloak-instance-tls
+  ingress:
+    enabled: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-instance-service-lb
+spec:
+  type: LoadBalancer
+  ports:
+  - name: https
+    port: 9443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: keycloak
+    app.kubernetes.io/instance: keycloak-instance
+    app.kubernetes.io/managed-by: keycloak-operator
+EOF
+
+# check
+curl --cacert keycloak-root-ca.pem https://keycloak.tst.k8s.mycompany.com:9443/realms/master/.well-known/openid-configuration
+curl --cacert keycloak-root-ca.pem https://keycloak.tst.k8s.mycompany.com:9443/realms/master/
+```
+
+
+---
+# Copy certificate
+![bg right:35% 50%](https://www.keycloak.org/resources/images/icon.svg)
+```bash
+# from the client node
+MY_MASTER_NODE=[IP]
+
+# copy keycloak-root-ca.pem to each nodes
+scp keycloak-root-ca.pem $MY_MASTER_NODE:/etc/rancher/k3s/keycloak-root-ca.pem"
+```
+
+
+---
+# Configure kube-apiserver
+![bg right:35% 50%](https://www.keycloak.org/resources/images/icon.svg)
+```bash
+# on every master node
+MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}') 
+MY_IP=$(ip a | grep $MY_NET_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
+MY_DOMAIN="tst.k8s.mycompany.com"
+
+echo "$MY_IP keycloak.$MY_DOMAIN" >> /etc/hosts
+
+# check
+curl --cacert /etc/rancher/k3s/keycloak-root-ca.pem \
+  -L  https://keycloak.tst.k8s.mycompany.com:9443
+
+cat > /etc/rancher/k3s/config.yaml <<EOF
+kube-apiserver-arg:
+- "oidc-issuer-url=https://keycloak.$MY_DOMAIN:9443/realms/master"
+- "oidc-ca-file=/etc/rancher/k3s/keycloak-root-ca.pem"
+- "oidc-client-id=k8s"
+- "oidc-username-claim=email"
+- "oidc-groups-claim=groups"
+- "oidc-username-prefix=oidc:"
+- "oidc-groups-prefix=oidc:"
+# logs to debug
+# - 'audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log'
+# - 'audit-policy-file=/var/lib/rancher/k3s/server/audit.yaml'
+# - 'audit-log-maxage=30'
+# - 'audit-log-maxbackup=10'
+# - 'audit-log-maxsize=100'
+EOF
+
+# policy for audit logs (debugging)
+cat > /var/lib/rancher/k3s/server/audit.yaml <<EOF
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+- level: Metadata
+EOF
+
+# on master nodes
+systemctl restart k3s.service
+```
+
+---
+# Configure KeyCloak
+![bg right:35% 50%](https://www.keycloak.org/resources/images/icon.svg)
+```bash
+# get credentials to login
+kubectl get secrets keycloak-instance-initial-admin -ojson | jq .data.username -Mr | base64 -d
+kubectl get secrets keycloak-instance-initial-admin -ojson | jq .data.password -Mr | base64 -d
+
+# go to https://keycloak.$MY_DOMAIN in a browser and login
+Add a new Client:                k8s
+Client authentication            -> On
+Direct access grants             -> On
+Valid redirect URIs              -> * # ! not for productive use, securty issue
+Valid post logout redirect URIs  -> * # ! not for productive use, securty issue
+
+# go to Credentials to get CLIENT_SECRET
+
+# add group membership mapper to client scope
+# Client Scopes -> profile -> Mappers -> Add Mapper by Configuration -> Group Membership
+name:                            k8s-groups
+Token Claim Name:                groups
+Full Group Path:                 off
+# add a new group "operations"
+# add a new user  "john"
+Email verified                   -> On
+Name                             john
+Email                            john@$MY_DOMAIN
+Join Groups:                     operations
+# set password for the user
+Temporary                        -> off
+```
+
+
+---
+# Configure kubectl to use oidc (OpenID connect)
+![bg right:40% 70%](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/OpenID_logo_2.svg/2880px-OpenID_logo_2.svg.png)
+```bash
+# on the client
+CLIENT_ID=k8s
+# in keycloak: clients -> k8s -> Credentials
+CLIENT_SECRET=[YOUR SECRET]
+
+# setup client
+kubectl krew install oidc-login
+kubectl oidc-login setup \
+  --oidc-issuer-url=https://keycloak.tst.k8s.mycompany.com:9443/realms/master \
+  --oidc-client-id=$CLIENT_ID \
+  --oidc-client-secret=$CLIENT_SECRET \
+  --certificate-authority keycloak-root-ca.pem
+
+# visit http://localhost:8000/ with browser
+
+kubectl config set-credentials oidc \
+  --exec-api-version=client.authentication.k8s.io/v1 \
+  --exec-interactive-mode=Never \
+  --exec-command=kubectl \
+  --exec-arg=oidc-login \
+  --exec-arg=get-token \
+  --exec-arg="--oidc-issuer-url=https://keycloak.tst.k8s.mycompany.com:9443/realms/master" \
+  --exec-arg="--oidc-client-id=$CLIENT_ID" \
+  --exec-arg="--oidc-client-secret=$CLIENT_SECRET" \
+  --exec-arg="--certificate-authority=keycloak-root-ca.pem"
+
+kubectl oidc-login get-token \
+  --oidc-issuer-url=https://keycloak.tst.k8s.mycompany.com:9443/realms/master \
+  --oidc-client-id=$CLIENT_ID \
+  --oidc-client-secret=$CLIENT_SECRET \
+  --certificate-authority keycloak-root-ca.pem
+```
+
+---
+# Review token
+![bg right:35% 50%](https://jwt.io/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fjwt-flower.f20616b0.png&w=3840&q=75)
+```bash
+kubectl oidc-login get-token \
+  --oidc-issuer-url=https://keycloak.tst.k8s.mycompany.com:9443/realms/master \
+  --oidc-client-id=$CLIENT_ID \
+  --oidc-client-secret=$CLIENT_SECRET \
+  --certificate-authority keycloak-root-ca.pem \
+  | jq .status.token -Mr  | awk -F. '{print $2}'  | base64 -d | jq .
+```
+
+---
+# Set user permissions
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/crb.svg)
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: operations
+subjects:
+# You can specify more than one "subject"
+- kind: User
+  name: oidc:john@$MY_DOMAIN
+  apiGroup: rbac.authorization.k8s.io
+- kind: Group
+  name: oidc:operations
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole                   # this must be Role or ClusterRole
+  name: edit                          # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+EOF
+```
+
+---
+# Test user / group permissions
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/user.svg)
+
+```bash
+kubectl krew install whoami
+
+kubectl whoami
+kubectl get pods
+
+kubectl config  set-context --current --user oidc
+
+kubectl whoami
+kubectl get pods
+```
+
+---
+# GitOps
+![bg right:50% 70%](https://miro.medium.com/v2/resize:fit:720/format:webp/0*bBhXCGL9x6aoujJw.jpg)
+__GitOps__ is a practice of managing infrastructure and apps with Git as the source of truth.
+
+
+---
+# ArgoCD
+Argo CD is a Kubernetes-native continuous deployment (CD) tool.
+![bg right:50% 70%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*4AJqcQrbk9HUWkqizJ2TdA.png)
+
+
+---
+# Installation by OLM
+![bg right:50% 70%](https://miro.medium.com/v2/resize:fit:720/format:webp/0*nHynQ_-YYFe3gGtN.png)
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: my-argocd-operator
+  namespace: operators
+spec:
+  channel: alpha
+  name: argocd-operator
+  source: operatorhubio-catalog
+  sourceNamespace: olm
+EOF
+
+
+kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitops-system
+---
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: argocd-instance
+  namespace: gitops-system
+spec:
+  server:
+    insecure: true
+    host: argocd.tst.k8s.mycompany.com
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+EOF
+
+# get admin pass to login
+kubectl get secret argocd-instance-cluster -ojson \
+  | jq -Mr '.data["admin.password"]' | base64 -d
+```
+
+
+---
+# Configure ArgoCD
+![bg right:35% 95%](https://devtron.ai/blog/content/images/size/w1000/2025/03/Untitled--5-.jpg)
+```bash
+# namespaces which argocd is allowed to work on
+kubectl patch secret argocd-instance-default-cluster-config \
+  -p='{"data":{"namespaces": "'$(echo -n "default,emojivoto,gitops-system,ingress-nginx,guestbook"|base64 -w0)'"}}'
+# argocd should be able to create cluster resources
+kubectl patch secret argocd-instance-default-cluster-config \
+  -p='{"data":{"clusterResources": "'$(echo -n "true"|base64 -w0)'"}}'
+# more permissions for argocd
+kubectl create clusterrolebinding argocd-admin \
+  --clusterrole=cluster-admin \
+  --serviceaccount=gitops-system:argocd-instance-argocd-application-controller
+```
+
+
+---
+# Guestbook
+![bg right:35% 100%]()
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: gitops-system
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  destination:
+    namespace: guestbook
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path:    examples/gitops/guestbook
+    repoURL: https://github.com/codecap/cloud-workshops.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - PruneLast=true
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+EOF
+```
+---
+# Emojivoto
+![bg right:40% 90%](https://constellation-docs.netlify.app/constellation/assets/images/example-emojivoto-55d31a6fd0c07e8e44b2b51d55dac60d.jpg)
+
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: emojivoto
+  namespace: gitops-system
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  destination:
+    server:         https://kubernetes.default.svc
+  source:
+    repoURL:        https://github.com/BuoyantIO/emojivoto/
+    path:           kustomize/deployment
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - PruneLast=true
+    - CreateNamespace=false
+    - PrunePropagationPolicy=foreground
+EOF
+```
+
+---
+# Nginx ingress controller
+![bg right:45% 80%](https://www.svgrepo.com/show/373924/nginx.svg)
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-nginx
+  namespace: gitops-system
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  destination:
+    server:         https://kubernetes.default.svc
+    namespace:      ingress-nginx
+  source:
+    repoURL:        https://kubernetes.github.io/ingress-nginx
+    chart:          ingress-nginx
+    targetRevision: 4.12.3
+    helm:
+      valuesObject:
+        controller:
+          admissionWebhooks:
+            enabled: false
+          service:
+            ports:
+              http:  18080
+              https: 18443
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - PruneLast=true
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+EOF
+```
+
+
+---
+# Deploy Applications from GIT
+![bg right:50% 50%](https://www.svgrepo.com/show/303548/git-icon-logo.svg)
+
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name:      app-loader
+  namespace: gitops-system
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  destination:
+    namespace: gitops
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path:    examples/gitops/applications
+    repoURL: https://github.com/codecap/cloud-workshops.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - PruneLast=true
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+EOF
+```
+
+
 
 
 ---
@@ -1320,285 +2041,8 @@ https://blog.palark.com/kubernetes-snaphots-usage/
 * Velero
 * Ark
 * Kasten K10
----
-# User Management
 
 
-[k8s Auth](https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
-[k8s authentication with KeyCloak OIDC](https://medium.com/@amirhosseineidy/kubernetes-authentication-with-keycloak-oidc-63571eaeed61)
-[Prepare KeyCloak](https://geek-cookbook.funkypenguin.co.nz/recipes/kubernetes/keycloak/)
-[k3s with KeyCloak](https://geek-cookbook.funkypenguin.co.nz/kubernetes/oidc-authentication/k3s-keycloak/#)
-[JWT Debugger](https://jwt.io/)
-[client id & client secret](https://stackoverflow.com/questions/44752273/do-keycloak-clients-have-a-client-secret/69726692#69726692)
-[Step by Step - Using Keycloak Authentication in OpenShift](https://blog.stderr.at/openshift/2025/05/step-by-step-using-keycloak-authentication-in-openshift/)
-[AuthN/AuthZ with OIDC](https://medium.com/@mrbobbytables/kubernetes-day-2-operations-authn-authz-with-oidc-and-a-little-help-from-keycloak-de4ea1bdbbe)
-
-```bash
-CP_URL=$(kubectl cluster-info  | grep "control" | awk '{print $NF}')
-
-helm repo add permission-manager https://sighupio.github.io/permission-manager
-helm upgrade --install --namespace permission-manager --create-namespace  permission-manager permission-manager/permission-manager -f - <<EOF
-ingress:
-  enabled: true
-  annotations:
-    # kubernetes.io/ingress.class: nginx
-    # cert-manager.io/cluster-issuer: my-cluster-issuer
-  hosts:
-    - host: permission-manager.tst.k8s.mycompany.com
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-image:
-  tag: "v1.9.0"
-config:
-  clusterName: "tst"
-  controlPlaneAddress: "$CP_URL"
-  basicAuthPassword: "password"
-EOF
-```
-
-
-```bash
-cat > /etc/rancher/k3s/config.yaml <<EOF
-kube-apiserver-arg:
-- "oidc-issuer-url=https://keycloak.vna.k8s.works.sckt.net:8443/auth/realms/master/"
-- "oidc-client-id=kube-apiserver"
-- "oidc-username-claim=email"
-- "oidc-groups-claim=groups"
-- "oidc-username-prefix=oidc"
-- "oidc-groups-prefix=oidc"
-EOF
-```
-
-# KeyCloak
-[KeyCLoak Basic Deployment](https://www.keycloak.org/operator/basic-deployment)
-
-
-```bash
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: my-keycloak-operator
----
-apiVersion: operators.coreos.com/v1
-kind: OperatorGroup
-metadata:
-  name: operatorgroup
-  namespace: my-keycloak-operator
-spec:
-  targetNamespaces:
-  - my-keycloak-operator
----
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: my-keycloak-operator
-  namespace: my-keycloak-operator
-spec:
-  channel: fast
-  name: keycloak-operator
-  source: operatorhubio-catalog
-  sourceNamespace: olm
-EOF
-
-```
-
-
-
-
-```bash
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: keycloak-db-secret
-  namespace: my-keycloak-operator
-data:
-  password: $(echo -n admin    | base64 -w0)
-  username: $(echo -n password | base64 -w0)
----
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: postgresql-db
-spec:
-  serviceName: postgresql-db-service
-  selector:
-    matchLabels:
-      app: postgresql-db
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: postgresql-db
-    spec:
-      containers:
-        - name: postgresql-db
-          image: postgres:15
-          volumeMounts:
-            - mountPath: /data
-              name: cache-volume
-          env:
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: keycloak-db-secret
-                  key:  username
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: keycloak-db-secret
-                  key:  password
-            - name: PGDATA
-              value: /data/pgdata
-            - name: POSTGRES_DB
-              value: keycloak
-      volumes:
-        - name: cache-volume
-          emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres-db
-spec:
-  selector:
-    app: postgresql-db
-  ports:
-  - port: 5432
-    targetPort: 5432
-EOF
-
-```
-
-# Autorization
-
-[K8S Authorization - User Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles)
-
-## roles/clusterroles
-## rolebindings/clusterrolebindings
-
-```bash
-kubectl apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: operations
-subjects:
-# You can specify more than one "subject"
-- kind: User
-  name: oidc:operations@works.sckt.net
-  apiGroup: rbac.authorization.k8s.io
-- kind: Group
-  name: oidc:operations
-  apiGroup: rbac.authorization.k8s.io
-roleRef:
-  kind: ClusterRole                   # this must be Role or ClusterRole
-  name: edit                          # this must match the name of the Role or ClusterRole you wish to bind to
-  apiGroup: rbac.authorization.k8s.io
-EOF
-```
-
-
-
-## serviceaccoubts
-## users
-## cluster-admin
-## admin/edit/view
-## aggregate to
-
-
-```bash
-kubectl apply -f - <<EOF
-apiVersion: k8s.keycloak.org/v2alpha1
-kind: Keycloak
-metadata:
-  name: example-kc
-spec:
-  instances: 1
-  db:
-    vendor: postgres
-    host: postgres-db
-    usernameSecret:
-      name: keycloak-db-secret
-      key: username
-    passwordSecret:
-      name: keycloak-db-secret
-      key: password
-  http:
-    tlsSecret: keycloak-tls
-  hostname:
-    hostname: keycloak.$MY_DOMAIN
-  ingress:
-    enabled: true
-    className: traefik
-    annotations:
-      ingress.kubernetes.io/tls-acme: "true"
-      cert-manager.io/cluster-issuer: letsencrypt-production
-  proxy:
-    headers: xforwarded # double check your reverse proxy sets and overwrites the X-Forwarded-* headers
-
-
-# TODO: pathc ingress with tls
-EOF
-
-
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: keycloak
-    app.kubernetes.io/instance: example-kc
-    app.kubernetes.io/managed-by: keycloak-operator
-  name: example-kc-service-lb
-  namespace: my-keycloak-operator
-spec:
-  type: LoadBalancer
-  ports:
-  - name: https
-    port: 8443
-    protocol: TCP
-    targetPort: 8443
-  - name: management
-    port: 9000
-    protocol: TCP
-    targetPort: 9000
-  selector:
-    app: keycloak
-    app.kubernetes.io/instance: example-kc
-    app.kubernetes.io/managed-by: keycloak-operator
-EOF
-
-
-
-
-# on servers
-cat > /etc/rancher/k3s/config.yaml <<EOF
-kube-apiserver-arg:
-- "oidc-issuer-url=https://keycloak.vna.k8s.works.sckt.net:8443/auth/realms/master/"
-- "oidc-client-id=kube-apiserver"
-- "oidc-username-claim=email"
-- "oidc-groups-claim=groups"
-EOF
-systemctl restart k3s
-
-
-# client
-
-kubectl krew install oidc-login
-kubectl oidc-login setup --oidc-issuer-url=https://keycloak.vna.k8s.works.sckt.net:8443/auth/realms/maste --oidc-client-id=kube-apiserver --oidc-client-secret=test
-
-
-```
-
-
-
-
----
-# GitOps
-https://tecadmin.net/building-a-gitops-workflow-with-kubernetes-and-argocd/
 
 ---
 # Tasks
@@ -1612,6 +2056,12 @@ https://tecadmin.net/building-a-gitops-workflow-with-kubernetes-and-argocd/
 - Review Monitoring Data for the deployed application
 - Review Logs for the deployed application
 - Access the application by ingress and service of type LoadBalancer
+
+
+
+
+
+
 
 ---
 # Links
@@ -1633,3 +2083,6 @@ https://tecadmin.net/building-a-gitops-workflow-with-kubernetes-and-argocd/
 - [Providers](https://github.com/kubernetes-sigs/external-dns?tab=readme-ov-file#new-providers)
 - [Cert Manager - Intro](https://www.youtube.com/watch?v=Xv1bdeVnGGY)
 - [Let's Encrypt - Challenge Types](https://letsencrypt.org/docs/challenge-types/)
+- [K8S Auth](https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
+- [JWT Debugger](https://jwt.io/)
+- [KeyCloak Basic Deployment](https://www.keycloak.org/operator/basic-deployment)
