@@ -1114,7 +1114,7 @@ doctl compute domain records list sckt.net
 # User Management
 
 ---
-# Kubernetes Authenticaton
+# Kubernetes Authentication
 ![bg right:35% 50%](https://riteshmblog.wordpress.com/wp-content/uploads/2022/05/kubernetes-secret.jpg)
 - X509 client certificates
 - Static token file
@@ -1266,7 +1266,7 @@ kubeclt get pods -n kube-system # should not work
 __usage within a pod__
 ![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/sa.svg)
 ```bash
-
+# TODO: we are using elasticsearch
 # Point to the internal API server hostname
 APISERVER=https://kubernetes.default.svc
 # Path to ServiceAccount token
@@ -1452,7 +1452,7 @@ scp keycloak-root-ca.pem $MY_MASTER_NODE:/etc/rancher/k3s/keycloak-root-ca.pem"
 ```bash
 # on every master node
 MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}') 
-MY_IP=$(ip a | grep $MY_NET_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
+MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
 MY_DOMAIN="tst.k8s.mycompany.com"
 
 echo "$MY_IP keycloak.$MY_DOMAIN" >> /etc/hosts
@@ -1577,6 +1577,7 @@ kubectl oidc-login get-token \
 ![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/crb.svg)
 
 ```bash
+MY_DOMAIN="tst.k8s.mycompany.com"
 kubectl apply -f - <<EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -1616,7 +1617,10 @@ kubectl get pods
 ---
 # GitOps
 ![bg right:50% 70%](https://miro.medium.com/v2/resize:fit:720/format:webp/0*bBhXCGL9x6aoujJw.jpg)
+[Intro](https://www.youtube.com/watch?v=f5EpcWp0THw)
+
 __GitOps__ is a practice of managing infrastructure and apps with Git as the source of truth.
+
 
 
 ---
@@ -1829,19 +1833,27 @@ spec:
 EOF
 ```
 
-
-
+---
+# Persistance
+![bg right:50% 50%](https://www.cloudops.com/images/blog/post/RookCeph1.png)
 
 ---
 # Persistance
+![bg right:35% 90%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*kbU4pDL2X1CDPWRofADmMg.png)
+[K8s Docs](https://kubernetes.io/docs/concepts/storage/volumes/#image)
+
+---
+# Rook
+![bg right:50% 50%](https://rook.io/images/rook-logo.svg)
+
 ```bash
+# deploy rook
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/common.yaml
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/operator.yaml
-
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/crds.yaml
-
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/cluster.yaml
 
+# check
 kubectl krew install rook-ceph
 kubectl rook-ceph ceph -s
 
@@ -1877,29 +1889,42 @@ spec:
         pathType: ImplementationSpecific
 EOF
 
-# visit
-ceph-dashboard.tst.k8s.mycompany.com
+# visit in browser
+https://ceph-dashboard.tst.k8s.mycompany.com
 
 # get pasword for login
 kubectl get secret rook-ceph-dashboard-password -ojson | jq  -Mr .data.password | base64 -d
+```
+---
+# Storage Classes
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/sc.svg)
 
-
+```bash
 # Create new staoge classes
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/csi/rbd/storageclass.yaml
 kubectl apply -f https://raw.githubusercontent.com/rook/rook/refs/tags/v1.17.1/deploy/examples/filesystem.yaml
 kubectl apply -f https://raw.githubusercontent.com/rook/rook/refs/tags/v1.17.1/deploy/examples/csi/cephfs/storageclass.yaml
 kubectl get storageclass
 
-# set a new staoge class to be the default one
+# Set a new storage class to be the default one
 kubectl annotate storageclass local-path       storageclass.kubernetes.io/is-default-class=false --overwrite
 kubectl annotate storageclass rook-ceph-block  storageclass.kubernetes.io/is-default-class=true  --overwrite
+```
+
+---
+# Access Modes
+![bg right:15% 90%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/pvc.svg)
+
+- __ReadWriteOnce (RWO)__ – The volume is mounted with read-write access for a single Node in your cluster. Any of the Pods running on that Node can read and write the volume’s contents.
+- __ReadOnlyMany (ROX)__ – The volume can be concurrently mounted to any of the Nodes in your cluster, with read-only access for any Pod.
+- __ReadWriteMany (RWX)__ – Similar to ReadOnlyMany, but with read-write access.
+- __ReadWriteOncePod (RWOP)__ – Eenforces that read-write access is provided to a single Pod. No other Pods in the cluster will be able to use the volume simultaneously.
 
 
-# TODO: deffiernce between ceph-block and cephfs
-
-# deploy a test application to use persitancy via PVCs
-
-# ReadWriteOnce
+---
+# Access Modes in Practice - RWO
+![bg right:25% 70%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/vol.svg)
+```bash
 kubectl apply -f - <<EOF
 ---
 apiVersion: v1
@@ -1942,14 +1967,17 @@ spec:
             claimName: rbd-pvc
             readOnly: false
 EOF
-
-# ReadWriteMany
+```
+---
+# Access Modes in Practice - RWX
+![bg right:25% 70%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/vol.svg)
+```bash
 kubectl apply -f - <<EOF
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: rbd-pvc
+  name: cephfs-pvc
 spec:
   accessModes:
     # - ReadWriteOnce
@@ -1984,63 +2012,353 @@ spec:
       volumes:
         - name: mypvc
           persistentVolumeClaim:
-            claimName: rbd-pvc
+            claimName: cephfs-pvc
             readOnly: false
 EOF
+```
+---
+# PV and PVC
+![bg right:45% 90%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*eUpYUJz3bTBAcyMCI6ThOw.png)
+__Persistent Volume__ — low level representation of a storage volume.
+
+__Persistent Volume Claim__ — binding between a Pod and Persistent Volume.
+
+__Storage Class__ — allows for dynamic provisioning of Persistent Volumes.
+
+
+---
+# Reclaim Policies
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/vol.svg)
+__Retain__ -  allows for manual reclamation of the resource. When the PersistentVolumeClaim is deleted, the PersistentVolume still exists and the volume is considered "released". An administrator can manually reclaim the volume.
+
+__Delete__ - For volume plugins that support the Delete reclaim policy, deletion removes both the PersistentVolume object from Kubernetes, as well as the associated storage asset in the external infrastructure.
+
+---
+![bg right:35% 50%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/vol.svg)
+# Volume Binding Modes
+- WaitForFirstConsumer
+- Immediate
+---
+# Expanding Volumes
+```bash
+# edit  a pvc and change the size
 
 ```
 
-
-# PV and PVC
-
-# Storage Classes
-
-# Access Modes
-* ReadWriteOnce (RWO) – The volume is mounted with read-write access for a single Node in your cluster. Any of the Pods running on that Node can read and write the volume’s contents.
-* ReadOnlyMany (ROX) – The volume can be concurrently mounted to any of the Nodes in your cluster, with read-only access for any Pod.
-* ReadWriteMany (RWX) – Similar to ReadOnlyMany, but with read-write access.
-* ReadWriteOncePod (RWOP) – This new variant, introduced as a beta feature in Kubernetes v1.27, enforces that read-write access is provided to a single Pod. No other Pods in the cluster will be able to use the volume simultaneously.
-
-# Reclaim Policies
-* Retain
-* Delete
-
-
-# Volume Binding Modes
-
-* WaitForFirstConsumer
-* Immediate
-
-# Expanding Volumes
-
+---
 # Container Storage Interface (CSI)
+![bg right:25% 80%](https://kubernetes.io/images/blog-logging/2018-04-10-container-storage-interface-beta/csi-logo.png)
+__Container Storage Interface (CSI)__  is an initiative to unify the storage interface of Container Orchestrator Systems (COs) like Kubernetes, Mesos, Docker swarm, cloud foundry, etc. combined with storage vendors like Ceph, Portworx, NetApp etc. This means, implementing a single CSI for a storage vendor is guaranteed to work with all COs.
 
-# Snaptshots
-https://blog.palark.com/kubernetes-snaphots-usage/
+---
+# Container Storage Interface (CSI)
+![bg right:50% 80%](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*vhFEJLBlQ24LLyHvG4ssaw.png)
 
-# Provisioning Volumes from Snapshots
+---
+# Volume Snapshots
+![bg right:35% 50%](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*LI6lYZu8NlllluGRsswACw.png)
 
+```bash
+# Install CRDS
+for f in \
+  groupsnapshot.storage.k8s.io_volumegroupsnapshotclasses.yaml \
+  groupsnapshot.storage.k8s.io_volumegroupsnapshotcontents.yaml \
+  groupsnapshot.storage.k8s.io_volumegroupsnapshots.yaml \
+  snapshot.storage.k8s.io_volumesnapshotclasses.yaml \
+  snapshot.storage.k8s.io_volumesnapshotcontents.yaml \
+  snapshot.storage.k8s.io_volumesnapshots.yaml
+do
+  kubectl apply -f   https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/refs/tags/v8.2.1/client/config/crd/$f
+done
 
+# Install controler
+for f in \
+  rbac-snapshot-controller.yaml \
+  setup-snapshot-controller.yaml
+do
+   kubectl apply -n kube-system -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/refs/tags/v8.2.1/deploy/kubernetes/snapshot-controller/$f
+done
 
+# Snaphostclass for RBD(ceph)
+kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/csi/rbd/snapshotclass.yaml
+# Snapshotclass for CephFS
+kubectl apply -f  https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/csi/cephfs/snapshotclass.yaml
+```
 
+---
+# Volume Snapshots
+![bg right:35% 50%](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*LI6lYZu8NlllluGRsswACw.png)
 
+```bash
+# Create a snapshot from existing PVC
+kubectl apply -f - <<EOF
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: cephfs-pvc-snapshot
+  namespace: default
+spec:
+  source:
+    persistentVolumeClaimName: rbd-pvc
+  volumeSnapshotClassName: csi-cephfsplugin-snapclass
+EOF
+```
 
+---
+# PVC from Snapshots
+![bg right:50% 35%](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*LI6lYZu8NlllluGRsswACw.png)
+```bash
+# restore a snptshot to pvc
+kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cephfs-pvc-restore
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteMany
+  dataSource:
+    apiGroup: snapshot.storage.k8s.io
+    kind: VolumeSnapshot
+    name: cephfs-pvc-snapshot
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: rook-cephfs
+EOF
+```
+---
+# PVC from Snapshots
+![bg right:50% 35%](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*LI6lYZu8NlllluGRsswACw.png)
+```bash
+# test
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: snapshot-test-pod
+spec:
+  containers:
+  - name: my-container
+    image: busybox
+    command: ["sleep", "infinity"]
+    volumeMounts:
+    - mountPath: /data
+      name: my-volume
+  volumes:
+  - name: my-volume
+    persistentVolumeClaim:
+      claimName: cephfs-pvc-restore
+EOF
+```
 
-
-
-[Volume Types](https://kubernetes.io/docs/concepts/storage/volumes/#image)
-
-
-
-![bg right:35% 90%](https://miro.medium.com/v2/resize:fit:720/format:webp/1*kbU4pDL2X1CDPWRofADmMg.png)
-
-
+---
+# Volume Group Snapshots
+![bg right:30% 60%](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*LI6lYZu8NlllluGRsswACw.png)
+A __group snapshot__ represents “copies” from multiple volumes that are taken at the same point in time.
 
 ---
 # Backup and Recovery
 * Velero
 * Ark
 * Kasten K10
+* ...
+
+
+---
+![bg right:50% 80%](https://velero.io/docs/v1.8/img/velero.png)
+
+---
+# Velero
+[Docs](https://velero.io/docs/main/)
+![bg right:40% 90%](https://hewlettpackard.github.io/hpe-solutions-openshift/4.14-AMD-LTI/assets/img/f23.e9d41058.png)
+- Take backups of your cluster and restore in case of loss.
+- Migrate cluster resources to other clusters.
+- Replicate your production cluster to development and testing clusters.
+
+
+---
+# S3 Stotage
+[MinIO Docs](https://docs.min.io/docs/minio-quickstart-guide.html)
+![bg right:35% 80%](https://min.io/resources/img/products/overview_main.svg)
+```bash
+# on the client
+mkdir -p ${HOME}/minio/data
+
+docker run  -d                      \
+  -p 9000:9000                      \
+  -p 9001:9001                      \
+  --user $(id -u):$(id -g)          \
+  --name minio1                     \
+  -e "MINIO_ROOT_USER=admin"        \
+  -e "MINIO_ROOT_PASSWORD=password" \
+  -v ${HOME}/minio/data:/data       \
+  quay.io/minio/minio               \
+  server /data --console-address ":9001"
+
+```
+
+---
+# Install Velero
+![bg right:35% 80%](https://velero.io/img/Velero.svg)
+```bash
+# on client
+# Get velero CLI
+curl -sS -L -o - \
+  https://github.com/vmware-tanzu/velero/releases/download/v1.16.1/velero-v1.16.1-linux-amd64.tar.gz \
+  | tar -xzvf - velero-v1.16.1-linux-amd64/velero --strip-components 1 
+mv velero ~/bin/
+
+# Place the config file
+cat > credentials-velero <<EOF
+[default]
+aws_access_key_id = admin
+aws_secret_access_key = password
+EOF
+
+# Install
+velero install \
+    --provider aws \
+    --bucket velero \
+    --features=EnableCSI \
+    --secret-file ./credentials-velero \
+    --plugins velero/velero-plugin-for-aws:v1.10.0 \
+    --use-node-agent \
+    --use-volume-snapshots=false \
+    --backup-location-config region=minio,s3ForcePathStyle="true",s3Url=http://10.10.20.200:9000
+
+# Verify
+velero backup-location get
+velero snapshot-location get
+velero plugin get
+```
+
+
+
+---
+# Create Backup and Restore
+![bg right:35% 80%](https://velero.io/img/Velero.svg)
+```bash
+# TODO: deploy emojivoto
+# on client
+# Backup
+velero backup create emojivoto \
+  --include-namespaces emojivoto
+
+# Restore
+velero restore create \
+  --from-backup emojivoto \
+  --namespace-mappings emojivoto:emojivoto-restored
+
+# Details about restore
+velero restore describe  emojivoto-20250714121311
+
+# s3 client
+MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}') 
+MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
+arkade get mc
+mc alias set s3 http://$MY_IP:9000 admin password
+# review ~/.mc/config.json
+
+mc --autocompletion
+source ~/.bashrc
+
+mv ls s3/
+mv ls s3/velero
+# ...
+mc cat s3/velero/backups/emojivoto/emojivoto-resource-list.json.gz | zcat  | jq .
+```
+
+---
+# Add some data into namespace
+![bg right:25% 70%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/vol.svg)
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cephfs-pvc
+  namespace: emojivoto
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: rook-cephfs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: emojivoto
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        volumeMounts:
+         - name: mypvc
+           mountPath: /var/lib/www/html
+      volumes:
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: cephfs-pvc
+            readOnly: false
+EOF
+```
+
+
+---
+# Create Backup and Restore
+![bg right:35% 80%](https://velero.io/img/Velero.svg)
+```bash
+# on client
+MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}') 
+MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
+# After reviewing we should know how to fix warnings
+# Create a new backup
+velero backup create 250714-emojivoto-001    \
+  --include-namespaces emojivoto         \
+  --exclude-cluster-scoped-resources '*' \
+  --exclude-namespace-scoped-resources clusterserviceversions.operators.coreos.com
+
+# Restore
+velero restore create --from-backup 250714-emojivoto-001 --namespace-mappings emojivoto:emojivoto-restored
+
+# Install kopia
+curl -sS -L -o - \
+  https://github.com/kopia/kopia/releases/download/v0.20.1/kopia-0.20.1-linux-x64.tar.gz \
+  | tar -xzvf - kopia-0.20.1-linux-x64/kopia --strip-components 1 
+mv kopia ~/bin/
+
+kopia repository connect s3    \
+  --bucket velero              \
+  --access-key admin           \
+  --secret-access-key=password \
+  --endpoint "$MY_IP:9000"     \
+  --disable-tls                \
+  --prefix kopia/emojivoto/    \
+  --password static-passw0rd
+
+kopia snapshot list --all
+mkdir kopia-restore
+kopia snapshot restore [SNAPSHOT_ID] kopia-restore/
+```
 
 
 
@@ -2086,3 +2404,8 @@ https://blog.palark.com/kubernetes-snaphots-usage/
 - [K8S Auth](https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
 - [JWT Debugger](https://jwt.io/)
 - [KeyCloak Basic Deployment](https://www.keycloak.org/operator/basic-deployment)
+- [Rook storage orchestrator](https://rook.io/)
+- [Volume Group Snapshots with Rook](https://rook.io/docs/rook/latest-release/Storage-Configuration/Ceph-CSI/ceph-csi-volume-group-snapshot/)
+- [Kubernetes Volume Types](https://kubernetes.io/docs/concepts/storage/volumes/#image)
+- [Velero](https://velero.io/docs/main/)
+- [MinIO Docs](https://docs.min.io/docs/minio-quickstart-guide.html)
