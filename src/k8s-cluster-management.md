@@ -1847,6 +1847,7 @@ EOF
 ![bg right:50% 50%](https://rook.io/images/rook-logo.svg)
 
 ```bash
+# TODO: check time synced on every cluster node (ntp)
 # deploy rook
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/common.yaml
 kubectl apply -f https://github.com/rook/rook/raw/refs/tags/v1.17.1/deploy/examples/operator.yaml
@@ -1907,8 +1908,8 @@ kubectl apply -f https://raw.githubusercontent.com/rook/rook/refs/tags/v1.17.1/d
 kubectl get storageclass
 
 # Set a new storage class to be the default one
-kubectl annotate storageclass local-path       storageclass.kubernetes.io/is-default-class=false --overwrite
-kubectl annotate storageclass rook-ceph-block  storageclass.kubernetes.io/is-default-class=true  --overwrite
+kubectl annotate storageclass local-path  storageclass.kubernetes.io/is-default-class=false --overwrite
+kubectl annotate storageclass rook-cephfs storageclass.kubernetes.io/is-default-class=true  --overwrite
 ```
 
 ---
@@ -2100,7 +2101,7 @@ metadata:
   namespace: default
 spec:
   source:
-    persistentVolumeClaimName: rbd-pvc
+    persistentVolumeClaimName: cephfs-pvc
   volumeSnapshotClassName: csi-cephfsplugin-snapclass
 EOF
 ```
@@ -2158,7 +2159,7 @@ EOF
 ---
 # Volume Group Snapshots
 ![bg right:30% 60%](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*LI6lYZu8NlllluGRsswACw.png)
-A __group snapshot__ represents “copies” from multiple volumes that are taken at the same point in time.
+__group snapshot__ represents “copies” from multiple volumes that are taken at the same point in time.
 
 ---
 # Backup and Recovery
@@ -2186,9 +2187,19 @@ A __group snapshot__ represents “copies” from multiple volumes that are take
 ![bg right:35% 80%](https://min.io/resources/img/products/overview_main.svg)
 ```bash
 # on the client
+# as root
+dnf -y install dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+dnf -y install docker-ce docker-ce-cli
+systemctl enable --now docker
+usermod -G docker deploy
+# logout and login again as user deploy
+
+# as deploy user
 mkdir -p ${HOME}/minio/data
 
 docker run  -d                      \
+  --restart always                  \
   -p 9000:9000                      \
   -p 9001:9001                      \
   --user $(id -u):$(id -g)          \
