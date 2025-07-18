@@ -2091,6 +2091,8 @@ aws_secret_access_key = password
 EOF</span>
 
 <span class="hljs-comment"># Install</span>
+MY_IP_PRFX=$(ip r | grep default | awk <span class="hljs-string">&#x27;{print $3}&#x27;</span>| awk -F . <span class="hljs-string">&#x27;{print $1&quot;.&quot;$2&quot;.&quot;$3}&#x27;</span>) 
+MY_IP=$(ip a | grep <span class="hljs-variable">$MY_IP_PRFX</span> | <span class="hljs-built_in">head</span> -n1 | awk <span class="hljs-string">&#x27;{print $2}&#x27;</span> | sed -e <span class="hljs-string">&quot;s#/.*##&quot;</span>)
 velero install \
     --provider aws \
     --bucket velero \
@@ -2099,7 +2101,7 @@ velero install \
     --plugins velero/velero-plugin-for-aws:v1.10.0 \
     --use-node-agent \
     --use-volume-snapshots=<span class="hljs-literal">false</span> \
-    --backup-location-config region=minio,s3ForcePathStyle=<span class="hljs-string">&quot;true&quot;</span>,s3Url=http://10.10.20.200:9000
+    --backup-location-config region=minio,s3ForcePathStyle=<span class="hljs-string">&quot;true&quot;</span>,s3Url=http://<span class="hljs-variable">$MY_IP</span>:9000
 
 <span class="hljs-comment"># Verify</span>
 velero backup-location get
@@ -2107,39 +2109,7 @@ velero snapshot-location get
 velero plugin get
 </code></pre>
 </section>
-</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="95" style="" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="96" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://velero.io/img/Velero.svg&quot;);background-size:80%;"></figure></div></section></foreignObject><foreignObject width="65%" height="720"><section id="96" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="96" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
-<h1 id="create-backup-and-restore">Create Backup and Restore</h1>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># TODO: deploy emojivoto</span>
-<span class="hljs-comment"># on client</span>
-<span class="hljs-comment"># Backup</span>
-velero backup create emojivoto \
-  --include-namespaces emojivoto
-
-<span class="hljs-comment"># Restore</span>
-velero restore create \
-  --from-backup emojivoto \
-  --namespace-mappings emojivoto:emojivoto-restored
-
-<span class="hljs-comment"># Details about restore</span>
-velero restore describe  emojivoto-20250714121311
-
-<span class="hljs-comment"># s3 client</span>
-MY_IP_PRFX=$(ip r | grep default | awk <span class="hljs-string">&#x27;{print $3}&#x27;</span>| awk -F . <span class="hljs-string">&#x27;{print $1&quot;.&quot;$2&quot;.&quot;$3}&#x27;</span>) 
-MY_IP=$(ip a | grep <span class="hljs-variable">$MY_IP_PRFX</span> | <span class="hljs-built_in">head</span> -n1 | awk <span class="hljs-string">&#x27;{print $2}&#x27;</span> | sed -e <span class="hljs-string">&quot;s#/.*##&quot;</span>)
-arkade get mc
-mc <span class="hljs-built_in">alias</span> <span class="hljs-built_in">set</span> s3 http://<span class="hljs-variable">$MY_IP</span>:9000 admin password
-<span class="hljs-comment"># review ~/.mc/config.json</span>
-
-mc --autocompletion
-<span class="hljs-built_in">source</span> ~/.bashrc
-
-<span class="hljs-built_in">mv</span> <span class="hljs-built_in">ls</span> s3/
-<span class="hljs-built_in">mv</span> <span class="hljs-built_in">ls</span> s3/velero
-<span class="hljs-comment"># ...</span>
-mc <span class="hljs-built_in">cat</span> s3/velero/backups/emojivoto/emojivoto-resource-list.json.gz | zcat  | jq .
-</code></pre>
-</section>
-</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="96" style="" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="97" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:25%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/vol.svg&quot;);background-size:70%;"></figure></div></section></foreignObject><foreignObject width="75%" height="720"><section id="97" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="97" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:25%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="95" style="" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="96" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:25%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/vol.svg&quot;);background-size:70%;"></figure></div></section></foreignObject><foreignObject width="75%" height="720"><section id="96" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="96" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:25%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="add-some-data-into-namespace">Add some data into namespace</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">kubectl apply -f - &lt;&lt;<span class="hljs-string">EOF
 ---
@@ -2187,6 +2157,41 @@ spec:
 EOF</span>
 </code></pre>
 </section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="96" style="" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="97" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://velero.io/img/Velero.svg&quot;);background-size:80%;"></figure></div></section></foreignObject><foreignObject width="65%" height="720"><section id="97" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="97" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h1 id="create-backup-and-restore">Create Backup and Restore</h1>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># TODO: deploy emojivoto</span>
+<span class="hljs-comment"># on client</span>
+<span class="hljs-comment"># Backup</span>
+<span class="hljs-comment"># s3 client</span>
+MY_IP_PRFX=$(ip r | grep default | awk <span class="hljs-string">&#x27;{print $3}&#x27;</span>| awk -F . <span class="hljs-string">&#x27;{print $1&quot;.&quot;$2&quot;.&quot;$3}&#x27;</span>) 
+MY_IP=$(ip a | grep <span class="hljs-variable">$MY_IP_PRFX</span> | <span class="hljs-built_in">head</span> -n1 | awk <span class="hljs-string">&#x27;{print $2}&#x27;</span> | sed -e <span class="hljs-string">&quot;s#/.*##&quot;</span>)
+arkade get mc
+mc <span class="hljs-built_in">alias</span> <span class="hljs-built_in">set</span> s3 http://<span class="hljs-variable">$MY_IP</span>:9000 admin password
+<span class="hljs-comment"># review ~/.mc/config.json</span>
+
+mc --autocompletion
+<span class="hljs-built_in">source</span> ~/.bashrc
+
+mc <span class="hljs-built_in">ls</span> s3/
+<span class="hljs-comment"># create a new bucket for velero</span>
+mc mb s3/velero
+
+velero backup create emojivoto \
+  --include-namespaces emojivoto
+
+<span class="hljs-comment"># Restore</span>
+velero restore create \
+  --from-backup emojivoto \
+  --namespace-mappings emojivoto:emojivoto-restored
+
+<span class="hljs-comment"># Details about restore</span>
+velero restore describe  emojivoto-[TMST]
+
+
+mc <span class="hljs-built_in">ls</span>  s3/velero
+mc <span class="hljs-built_in">cat</span> s3/velero/backups/emojivoto/emojivoto-resource-list.json.gz | zcat  | jq .
+</code></pre>
+</section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="97" style="" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="98" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;https://velero.io/img/Velero.svg&quot;);background-size:80%;"></figure></div></section></foreignObject><foreignObject width="65%" height="720"><section id="98" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="98" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <h1 id="create-backup-and-restore-1">Create Backup and Restore</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash"><span class="hljs-comment"># on client</span>
@@ -2194,13 +2199,30 @@ MY_IP_PRFX=$(ip r | grep default | awk <span class="hljs-string">&#x27;{print $3
 MY_IP=$(ip a | grep <span class="hljs-variable">$MY_IP_PRFX</span> | <span class="hljs-built_in">head</span> -n1 | awk <span class="hljs-string">&#x27;{print $2}&#x27;</span> | sed -e <span class="hljs-string">&quot;s#/.*##&quot;</span>)
 <span class="hljs-comment"># After reviewing we should know how to fix warnings</span>
 <span class="hljs-comment"># Create a new backup</span>
-velero backup create 250714-emojivoto-001    \
+velero backup create emojivoto-001    \
   --include-namespaces emojivoto         \
   --exclude-cluster-scoped-resources <span class="hljs-string">&#x27;*&#x27;</span> \
   --exclude-namespace-scoped-resources clusterserviceversions.operators.coreos.com
 
 <span class="hljs-comment"># Restore</span>
-velero restore create --from-backup 250714-emojivoto-001 --namespace-mappings emojivoto:emojivoto-restored
+velero restore create \
+  --from-backup emojivoto-001 \
+  --namespace-mappings emojivoto:emojivoto-restored
+
+<span class="hljs-comment"># Review resources on both namspaces</span>
+<span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> pod pvc deploy serviceaccount configmap secret
+<span class="hljs-keyword">do</span>
+  <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;### Checking <span class="hljs-variable">$r</span> ###&quot;</span>
+  k get <span class="hljs-variable">$r</span> -n emojivoto
+  k get <span class="hljs-variable">$r</span> -n emojivoto-restored
+<span class="hljs-keyword">done</span>
+
+<span class="hljs-comment"># Login in to an nginx pod in the emojivot-resored ns, check if there a test file we created</span>
+kubectl <span class="hljs-built_in">exec</span> -ti $( \
+  kubectl get pods -n emojivoto-restored \
+    | grep nginx-deployment \
+    | <span class="hljs-built_in">head</span> -n1 | awk <span class="hljs-string">&#x27;{print $1}&#x27;</span>
+  ) -- <span class="hljs-built_in">ls</span> -lh /var/lib/www/html
 
 <span class="hljs-comment"># Install kopia</span>
 curl -sS -L -o - \
@@ -2208,10 +2230,11 @@ curl -sS -L -o - \
   | tar -xzvf - kopia-0.20.1-linux-x64/kopia --strip-components 1 
 <span class="hljs-built_in">mv</span> kopia ~/bin/
 
+<span class="hljs-comment"># extract the password from velero-repo-credentials secet in velero namespace</span>
 kopia repository connect s3    \
   --bucket velero              \
   --access-key admin           \
-  --secret-access-key=password \
+  --secret-access-key password \
   --endpoint <span class="hljs-string">&quot;<span class="hljs-variable">$MY_IP</span>:9000&quot;</span>     \
   --disable-tls                \
   --prefix kopia/emojivoto/    \
@@ -2225,16 +2248,42 @@ kopia snapshot restore [SNAPSHOT_ID] kopia-restore/
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="98" style="" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="99" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="99" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">
 <h1 id="tasks">Tasks</h1>
 <ul>
-<li>Create a multi-node cluster with kubeadm</li>
-<li>Create a multi-node cluster with k0s</li>
-<li>Create a multi-node cluster with k3s</li>
-<li>Install <a href="https://codecap.github.io/cloud-workshops/k8s-addons.html">Addons</a> if needed</li>
-<li>Deploy Prometheus, Alertmanager and Grafana to monitor you k8s cluster</li>
-<li>Deploy ELK Stack to collect logs</li>
-<li>Deploy/Change/Scale/Celete a <a href="https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/">staless application</a></li>
-<li>Review Monitoring Data for the deployed application</li>
-<li>Review Logs for the deployed application</li>
-<li>Access the application by ingress and service of type LoadBalancer</li>
+<li>
+<p>Create a multi-node cluster with kubeadm</p>
+</li>
+<li>
+<p>Create a multi-node cluster with k0s</p>
+</li>
+<li>
+<p>Create a multi-node cluster with k3s</p>
+</li>
+<li>
+<p>Install <a href="https://codecap.github.io/cloud-workshops/k8s-addons.html">Addons</a> if needed</p>
+</li>
+<li>
+<p>Deploy Prometheus, Alertmanager and Grafana to monitor you k8s cluster</p>
+</li>
+<li>
+<p>Deploy ELK Stack to collect logs</p>
+</li>
+<li>
+<p>Deploy/Change/Scale/Celete a <a href="https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/">staless application</a></p>
+</li>
+<li>
+<p>Review Monitoring Data for the deployed application</p>
+</li>
+<li>
+<p>Review Logs for the deployed application</p>
+</li>
+<li>
+<p>Access the application by ingress and service of type LoadBalancer</p>
+</li>
+<li>
+<p>Create a DaemonSet which is using a single volume of type RWX</p>
+</li>
+<li>
+<p>Create a StatefulSet which is using multiple volumes of type RWO (utilize VolumeClaimTemplates)</p>
+</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="100" data-background-image="url(https://codecap.github.io/cloud-workshops/assets/background.jpg)" data-paginate="true" data-theme="default" lang="en-US" data-marpit-pagination="100" style="--background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);--paginate:true;--theme:default;background-image:url(https://codecap.github.io/cloud-workshops/assets/background.jpg);background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-pagination-total="100" data-transition-back="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}" data-transition="{&quot;name&quot;:&quot;cover&quot;,&quot;builtinFallback&quot;:true}">

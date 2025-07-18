@@ -2231,6 +2231,8 @@ aws_secret_access_key = password
 EOF
 
 # Install
+MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}') 
+MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
 velero install \
     --provider aws \
     --bucket velero \
@@ -2239,7 +2241,7 @@ velero install \
     --plugins velero/velero-plugin-for-aws:v1.10.0 \
     --use-node-agent \
     --use-volume-snapshots=false \
-    --backup-location-config region=minio,s3ForcePathStyle="true",s3Url=http://10.10.20.200:9000
+    --backup-location-config region=minio,s3ForcePathStyle="true",s3Url=http://$MY_IP:9000
 
 # Verify
 velero backup-location get
@@ -2247,41 +2249,6 @@ velero snapshot-location get
 velero plugin get
 ```
 
-
-
----
-# Create Backup and Restore
-![bg right:35% 80%](https://velero.io/img/Velero.svg)
-```bash
-# TODO: deploy emojivoto
-# on client
-# Backup
-velero backup create emojivoto \
-  --include-namespaces emojivoto
-
-# Restore
-velero restore create \
-  --from-backup emojivoto \
-  --namespace-mappings emojivoto:emojivoto-restored
-
-# Details about restore
-velero restore describe  emojivoto-20250714121311
-
-# s3 client
-MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}') 
-MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
-arkade get mc
-mc alias set s3 http://$MY_IP:9000 admin password
-# review ~/.mc/config.json
-
-mc --autocompletion
-source ~/.bashrc
-
-mv ls s3/
-mv ls s3/velero
-# ...
-mc cat s3/velero/backups/emojivoto/emojivoto-resource-list.json.gz | zcat  | jq .
-```
 
 ---
 # Add some data into namespace
@@ -2333,6 +2300,42 @@ spec:
 EOF
 ```
 
+---
+# Create Backup and Restore
+![bg right:35% 80%](https://velero.io/img/Velero.svg)
+```bash
+# TODO: deploy emojivoto
+# on client
+# Backup
+# s3 client
+MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}') 
+MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
+arkade get mc
+mc alias set s3 http://$MY_IP:9000 admin password
+# review ~/.mc/config.json
+
+mc --autocompletion
+source ~/.bashrc
+
+mc ls s3/
+# create a new bucket for velero
+mc mb s3/velero
+
+velero backup create emojivoto \
+  --include-namespaces emojivoto
+
+# Restore
+velero restore create \
+  --from-backup emojivoto \
+  --namespace-mappings emojivoto:emojivoto-restored
+
+# Details about restore
+velero restore describe  emojivoto-[TMST]
+
+
+mc ls  s3/velero
+mc cat s3/velero/backups/emojivoto/emojivoto-resource-list.json.gz | zcat  | jq .
+```
 
 ---
 # Create Backup and Restore
@@ -2343,13 +2346,30 @@ MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."
 MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
 # After reviewing we should know how to fix warnings
 # Create a new backup
-velero backup create 250714-emojivoto-001    \
+velero backup create emojivoto-001    \
   --include-namespaces emojivoto         \
   --exclude-cluster-scoped-resources '*' \
   --exclude-namespace-scoped-resources clusterserviceversions.operators.coreos.com
 
 # Restore
-velero restore create --from-backup 250714-emojivoto-001 --namespace-mappings emojivoto:emojivoto-restored
+velero restore create \
+  --from-backup emojivoto-001 \
+  --namespace-mappings emojivoto:emojivoto-restored
+
+# Review resources on both namspaces
+for r in pod pvc deploy serviceaccount configmap secret
+do
+  echo "### Checking $r ###"
+  k get $r -n emojivoto
+  k get $r -n emojivoto-restored
+done
+
+# Login in to an nginx pod in the emojivot-resored ns, check if there a test file we created
+kubectl exec -ti $( \
+  kubectl get pods -n emojivoto-restored \
+    | grep nginx-deployment \
+    | head -n1 | awk '{print $1}'
+  ) -- ls -lh /var/lib/www/html
 
 # Install kopia
 curl -sS -L -o - \
@@ -2357,10 +2377,11 @@ curl -sS -L -o - \
   | tar -xzvf - kopia-0.20.1-linux-x64/kopia --strip-components 1 
 mv kopia ~/bin/
 
+# extract the password from velero-repo-credentials secet in velero namespace
 kopia repository connect s3    \
   --bucket velero              \
   --access-key admin           \
-  --secret-access-key=password \
+  --secret-access-key password \
   --endpoint "$MY_IP:9000"     \
   --disable-tls                \
   --prefix kopia/emojivoto/    \
@@ -2385,6 +2406,9 @@ kopia snapshot restore [SNAPSHOT_ID] kopia-restore/
 - Review Monitoring Data for the deployed application
 - Review Logs for the deployed application
 - Access the application by ingress and service of type LoadBalancer
+
+- Create a DaemonSet which is using a single volume of type RWX
+- Create a StatefulSet which is using multiple volumes of type RWO (utilize VolumeClaimTemplates)
 
 
 
