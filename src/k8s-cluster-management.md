@@ -2164,7 +2164,9 @@ __group snapshot__ represents “copies” from multiple volumes that are taken 
 ---
 # Backup and Recovery
 * Velero
-* Ark
+* k8up
+* cloudcasa
+* stash
 * Kasten K10
 * ...
 
@@ -2251,9 +2253,13 @@ velero plugin get
 
 
 ---
-# Add some data into namespace
+# Create a Namespace to backup
 ![bg right:25% 70%](https://github.com/kubernetes/community/raw/master/icons/svg/resources/unlabeled/vol.svg)
 ```bash
+# deploy emojivoto application
+kubectl apply -k github.com/BuoyantIO/emojivoto/kustomize/deployment
+
+# add some persistent data into the namespace
 kubectl apply -f - <<EOF
 ---
 apiVersion: v1
@@ -2298,6 +2304,10 @@ spec:
             claimName: cephfs-pvc
             readOnly: false
 EOF
+
+# deploy emojivoto application
+kubectl exec -ti $( kubectl get pods -n emojivoto | grep nginx-deployment | head -n1 | awk '{print $1}' ) -- bash -c "date >> /var/lib/www/html/test"
+
 ```
 
 ---
@@ -2321,8 +2331,8 @@ mc ls s3/
 # create a new bucket for velero
 mc mb s3/velero
 
-velero backup create emojivoto \
-  --include-namespaces emojivoto
+velero backup create emojivoto   \
+  --include-namespaces emojivoto \
 
 # Restore
 velero restore create \
@@ -2330,8 +2340,7 @@ velero restore create \
   --namespace-mappings emojivoto:emojivoto-restored
 
 # Details about restore
-velero restore describe  emojivoto-[TMST]
-
+velero restore describe [RESTORE_NAME]
 
 mc ls  s3/velero
 mc cat s3/velero/backups/emojivoto/emojivoto-resource-list.json.gz | zcat  | jq .
@@ -2341,22 +2350,28 @@ mc cat s3/velero/backups/emojivoto/emojivoto-resource-list.json.gz | zcat  | jq 
 # Create Backup and Restore
 ![bg right:35% 80%](https://velero.io/img/Velero.svg)
 ```bash
-# on client
-MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}') 
-MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
 # After reviewing we should know how to fix warnings
 # Create a new backup
-velero backup create emojivoto-001    \
+velero backup create emojivoto-001       \
+  --snapshot-move-data                   \
   --include-namespaces emojivoto         \
   --exclude-cluster-scoped-resources '*' \
   --exclude-namespace-scoped-resources clusterserviceversions.operators.coreos.com
 
-# Restore
+# check
+velero repo get
+velero backup describe emojivoto-001
+
+# restore
 velero restore create \
   --from-backup emojivoto-001 \
   --namespace-mappings emojivoto:emojivoto-restored
 
-# Review resources on both namspaces
+# check
+velero restore get
+velero restore descirbe [RESTORE_NAME]
+
+# review resources on both namspaces
 for r in pod pvc deploy serviceaccount configmap secret
 do
   echo "### Checking $r ###"
@@ -2364,18 +2379,32 @@ do
   k get $r -n emojivoto-restored
 done
 
-# Login in to an nginx pod in the emojivot-resored ns, check if there a test file we created
+# login in to an nginx pod in the emojivoto-resored ns, check if there a test file we created
 kubectl exec -ti $( \
   kubectl get pods -n emojivoto-restored \
     | grep nginx-deployment \
     | head -n1 | awk '{print $1}'
   ) -- ls -lh /var/lib/www/html
+```
 
-# Install kopia
+---
+# Review Backup Data
+![bg right:35% 80%](https://github.com/kopia/kopia/raw/master/icons/kopia.svg)
+```bash
+# on the client
+MY_IP_PRFX=$(ip r | grep default | awk '{print $3}'| awk -F . '{print $1"."$2"."$3}')
+MY_IP=$(ip a | grep $MY_IP_PRFX | head -n1 | awk '{print $2}' | sed -e "s#/.*##")
+# Install kopia CLI
 curl -sS -L -o - \
   https://github.com/kopia/kopia/releases/download/v0.20.1/kopia-0.20.1-linux-x64.tar.gz \
   | tar -xzvf - kopia-0.20.1-linux-x64/kopia --strip-components 1 
 mv kopia ~/bin/
+
+# get repository password
+velero repo get
+kubectl -n velero get secret velero-repo-credentials -ojson  \
+| jq -Mr '.data["repository-password"]' | base64 -d
+
 
 # extract the password from velero-repo-credentials secet in velero namespace
 kopia repository connect s3    \
@@ -2388,11 +2417,36 @@ kopia repository connect s3    \
   --password static-passw0rd
 
 kopia snapshot list --all
+
 mkdir kopia-restore
 kopia snapshot restore [SNAPSHOT_ID] kopia-restore/
 ```
+---
+# Schedule a Backup
+![bg right:35% 80%](https://velero.io/img/Velero.svg)
+```bash
 
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday;
+# │ │ │ │ │                                   7 is also Sunday on some systems)
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * *
 
+velero schedule create example-schedule --schedule="0 3 * * *"
+
+velero create schedule NAME --schedule="@every 24h" --include-namespaces web
+
+velero create schedule emojivoto         \
+  --schedule="@every 24h"                \
+  --snapshot-move-data                   \
+  --include-namespaces emojivoto         \
+  --exclude-cluster-scoped-resources '*' \
+  --exclude-namespace-scoped-resources clusterserviceversions.operators.coreos.com
+```
 
 ---
 # Tasks
@@ -2402,19 +2456,21 @@ kopia snapshot restore [SNAPSHOT_ID] kopia-restore/
 - Install [Addons](https://codecap.github.io/cloud-workshops/k8s-addons.html) if needed
 - Deploy Prometheus, Alertmanager and Grafana to monitor you k8s cluster
 - Deploy ELK Stack to collect logs
-- Deploy/Change/Scale/Celete a [staless application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
+- Deploy/Change/Scale/Celete a [stateless application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
 - Review Monitoring Data for the deployed application
 - Review Logs for the deployed application
 - Access the application by ingress and service of type LoadBalancer
-
+- Create an Ingres with TLS and a Certificated signed by let's encrypt
+- Create a certificate to authenticate within Kubernetes
+- Assign edit permissions within a namespace for newly created Certifacate(user/group)
+- List Ingress Objects in all Namespaces from within a pod
+- Find  Application Manifests hosted on github, deploy the Application by kubectl
+- Find  Application Manifests hosted on github, deploy the Application with argoCD
+- Create a token for a Service Account / get a Token from Keycloak, decode it.
 - Create a DaemonSet which is using a single volume of type RWX
 - Create a StatefulSet which is using multiple volumes of type RWO (utilize VolumeClaimTemplates)
-
-
-
-
-
-
+- Create a Backup for a Namespace, review the backup, access the data on the s3 storage
+- Restore a Backup to a new namespce, check if there any difference between backup source and restore
 
 ---
 # Links
@@ -2443,4 +2499,5 @@ kopia snapshot restore [SNAPSHOT_ID] kopia-restore/
 - [Volume Group Snapshots with Rook](https://rook.io/docs/rook/latest-release/Storage-Configuration/Ceph-CSI/ceph-csi-volume-group-snapshot/)
 - [Kubernetes Volume Types](https://kubernetes.io/docs/concepts/storage/volumes/#image)
 - [Velero](https://velero.io/docs/main/)
+- [Velero - File System Backup](https://velero.io/docs/v1.10/file-system-backup/)
 - [MinIO Docs](https://docs.min.io/docs/minio-quickstart-guide.html)
