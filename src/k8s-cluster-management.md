@@ -2455,18 +2455,18 @@ velero create schedule emojivoto         \
 - Install [Addons](https://codecap.github.io/cloud-workshops/k8s-addons.html) if needed
 - Deploy Prometheus, Alertmanager and Grafana to monitor you k8s cluster
 - Deploy ELK Stack to collect logs
-- Deploy/Change/Scale/Celete a [stateless application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
+- Deploy/Change/Scale a [stateless application](https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/)
 - Review Monitoring Data for the deployed application
 - Review Logs for the deployed application
 - Access the application by ingress and service of type LoadBalancer
-- Create an Ingres with TLS and a Certificated signed by let's encrypt
+- Create an Ingress with TLS and a Certificated signed by let's encrypt
 ---
 # Tasks
 - Create a certificate to authenticate within Kubernetes
 - Assign edit permissions within a namespace for newly created Certifacate(user/group)
 - List Ingress Objects in all Namespaces from within a pod
-- Find  Application Manifests hosted on github, deploy the Application by kubectl
-- Find  Application Manifests hosted on github, deploy the Application with argoCD
+- Find Application Manifests hosted on github, deploy the Application by kubectl
+- Find Application Manifests hosted on github, deploy the Application with argoCD
 - Create a token for a Service Account / get a Token from Keycloak, decode it.
 ---
 # Tasks
@@ -2474,6 +2474,15 @@ velero create schedule emojivoto         \
 - Create a StatefulSet which is using multiple volumes of type RWO (utilize VolumeClaimTemplates)
 - Create a Backup for a Namespace, review the backup, access the data on the s3 storage
 - Restore a Backup to a new namespce, check if there any difference between backup source and restore
+---
+# Tasks
+- Create a DaemonSet to run only on master nodes(nodeSelector), worker nodes
+- Add Taints to Nodes, Create a deployment, scale up, review pod scheduling, adjust Deployment to tolerate taints
+- Assign a Quotas to a Namespaces, try to scale down/up a deployment
+- Deployment, Secret, ConfigMap, mount config map, extract values from secret into EnvVars
+- Deployment with Requests and Limits
+- Deployment, Rollout, Rollback, inspect replocasets
+- Install Jenkins by Helm / ArgoCD
 
 ---
 # Links
