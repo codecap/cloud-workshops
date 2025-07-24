@@ -2468,6 +2468,8 @@ velero create schedule emojivoto         \
 - Find  Application Manifests hosted on github, deploy the Application by kubectl
 - Find  Application Manifests hosted on github, deploy the Application with argoCD
 - Create a token for a Service Account / get a Token from Keycloak, decode it.
+---
+# Tasks
 - Create a DaemonSet which is using a single volume of type RWX
 - Create a StatefulSet which is using multiple volumes of type RWO (utilize VolumeClaimTemplates)
 - Create a Backup for a Namespace, review the backup, access the data on the s3 storage
