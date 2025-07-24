@@ -2460,6 +2460,8 @@ velero create schedule emojivoto         \
 - Review Logs for the deployed application
 - Access the application by ingress and service of type LoadBalancer
 - Create an Ingres with TLS and a Certificated signed by let's encrypt
+---
+# Tasks
 - Create a certificate to authenticate within Kubernetes
 - Assign edit permissions within a namespace for newly created Certifacate(user/group)
 - List Ingress Objects in all Namespaces from within a pod
@@ -2484,6 +2486,8 @@ velero create schedule emojivoto         \
 - [Prometheus](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://prometheus.io/&ved=2ahUKEwjM3-Ts35GNAxVm1QIHHSksC8IQFnoECBgQAQ&usg=AOvVaw2SXvTedblZYzyyTOzZ8Y5x)
 - [Prometheus Crash Course](https://www.youtube.com/watch?v=BEBsuA5tgUU)
 - [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus)
+---
+# Links
 - [ELK Stack](https://www.elastic.co/elastic-stack)
 - [What is ELK Stack](https://www.youtube.com/watch?v=jT-y6oS10jk)
 - [OpenSearch](https://opensearch.org/)
@@ -2494,6 +2498,8 @@ velero create schedule emojivoto         \
 - [K8S Auth](https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
 - [JWT Debugger](https://jwt.io/)
 - [KeyCloak Basic Deployment](https://www.keycloak.org/operator/basic-deployment)
+---
+# Links
 - [Rook storage orchestrator](https://rook.io/)
 - [Volume Group Snapshots with Rook](https://rook.io/docs/rook/latest-release/Storage-Configuration/Ceph-CSI/ceph-csi-volume-group-snapshot/)
 - [Kubernetes Volume Types](https://kubernetes.io/docs/concepts/storage/volumes/#image)
