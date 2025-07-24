@@ -2165,8 +2165,8 @@ __group snapshot__ represents “copies” from multiple volumes that are taken 
 # Backup and Recovery
 * Velero
 * k8up
-* cloudcasa
-* stash
+* CloudCasa
+* Stash
 * Kasten K10
 * ...
 
@@ -2247,7 +2247,6 @@ velero install \
 
 # Verify
 velero backup-location get
-velero snapshot-location get
 velero plugin get
 ```
 
