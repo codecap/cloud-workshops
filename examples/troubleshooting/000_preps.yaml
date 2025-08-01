@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: troubleshooting
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: default
+  namespace: troubleshooting
+spec:
+  hard:
+    configmaps:             "10"
+    persistentvolumeclaims: "4"
+    pods:                   "0"
+    replicationcontrollers: "20"
+    secrets:                "10"
+    services:               "10"
+    services.loadbalancers: "2"
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default
+spec:
+  podSelector: {}
+  ingress: []
+  # from kube-system
+  # - from:
+  #   - namespaceSelector:
+  #       matchLabels:
+  #         kubernetes.io/metadata.name: kube-system
+  # external ip
+  # - from:
+  #   - ipBlock:
+  #       cidr: 10.0.0.0/8

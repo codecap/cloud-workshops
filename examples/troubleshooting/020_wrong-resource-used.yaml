@@ -1,0 +1,22 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-wrong-resource-case
+  namespace: troubleshooting
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-wrong-resource-case
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      serviceAccount: nginx-wrong-resource-case
+      containers:
+      - name: nginx
+        image: nginx:1.14.2

@@ -1,0 +1,19 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-no-runnning-pods-case
+  namespace: troubleshooting
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-no-runnning-pods-case
+  template:
+    metadata:
+      labels:
+        app: nginx-no-runnning-pods-case
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
