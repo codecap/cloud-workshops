@@ -82,6 +82,7 @@ kubectl apply -f https://raw.githubusercontent.com/mhausenblas/troubleshooting-k
 ---
 ### Crashing v2
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Ensure deployment pods keep running.
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/crashpod.v2/crashloop-cert-app.yaml
 # refresh cert
@@ -89,14 +90,19 @@ kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/
 ```
 
 ---
-### meme generator Failure
+### Application Failure
+Apply manifests. Ensure meme-service is working correctly and curl-deployment can fetch data from it.
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/holmes-meme-generator/failure/
+for i in https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/holmes-meme-generator/failure/{config,curl,deployment}.yaml
+do
+  kubectl apply -f $i
+done
 ```
 
 ---
-### Init Continaers
+### Init Containers
+Apply manifest. Ensure the pod can start and keep runnning.
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/init_crashloop_backoff/create_init_crashloop_backoff.yaml
@@ -105,6 +111,7 @@ kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/
 ---
 ### Pod Resources
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Apply manifest. Ensure deployment pods can start and keep running
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/pending_pods/pending_pod_resources.yaml
 ```
@@ -116,6 +123,7 @@ kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/
 ---
 ### Preps
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Please apply the preparation manifest before we can continue
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/000_preps.yaml
 ```
