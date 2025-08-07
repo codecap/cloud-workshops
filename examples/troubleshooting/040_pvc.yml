@@ -13,7 +13,7 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: local-path
-  volumeMode: Filesystem
+  volumeMode: Block
 ---
 apiVersion: apps/v1
 kind: Deployment

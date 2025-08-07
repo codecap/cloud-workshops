@@ -137,7 +137,7 @@ kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/
 ```
 
 ---
-### Use Case wrong resource used
+### Use Case: wrong resource used
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
 Ensure that deployment pods are up and running
 ```bash
