@@ -11,8 +11,159 @@ backgroundImage: url(https://codecap.github.io/cloud-workshops/assets/background
 paginate: true
 ---
 
-# Kubernetes Cluster Management
+# Kubernetes Troubleshooting
 ![bg left:40% 80%](https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg)
 
-## Examples
-https://github.com/robusta-dev/kubernetes-demos
+---
+## Simple Scenarios ⭐
+
+![bg right:35% 80%](https://assets.zyrosite.com/cdn-cgi/image/format=auto,fit=crop/YD0y4WNK2NF309oZ/10595761-YNqNDGrBpeU5ywZO.png)
+
+---
+### Crashing Pod (CrashLoopBackoff)
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Apply the manidest. Ensure the pod can start.
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/main/crashpod/broken.yaml
+```
+
+---
+### OOMKilled Pod (Out of Memory Kill)
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Apply the manifest. Monitor memory consumption. After some time the pod will be killed by OS. Fix the problem.
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/main/oomkill/oomkill_job.yaml
+```
+
+---
+### Pending Pod (Unschedulable due to Node Selectors)
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Apply the manifest, ensure the pod can start
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/pending_pods/pending_pod_node_selector.yaml
+```
+
+---
+### ImagePullBackOff
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Ensure deployment pods can start
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/main/image_pull_backoff/no_such_image.yaml
+```
+
+---
+### Liveness Probe Failure
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+If liveness probe fails, the pod will be restarted after some period of time. Make sure the probe is successful.
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/main/liveness_probe_fail/failing_liveness_probe.yaml
+```
+
+---
+### Readiness Probe Failure
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Deploy. The pods should be shown as ready
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/main/readiness_probe_fail/failing_readiness_probe.yaml
+```
+
+---
+### Wrong Mount Path
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Apply the manifest. Check the logs of running pods. The reader container in the deployment should not log an error message.
+```bash
+kubectl apply -f https://raw.githubusercontent.com/mhausenblas/troubleshooting-k8s-apps/refs/heads/master/04_storage-failedmount.yaml
+```
+
+---
+## Advanced Scenarios ⭐⭐
+![bg right:35% 80%](https://assets.zyrosite.com/cdn-cgi/image/format=auto,fit=crop/YD0y4WNK2NF309oZ/10595761-YNqNDGrBpeU5ywZO.png)
+
+---
+### Crashing v2
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/crashpod.v2/crashloop-cert-app.yaml
+# refresh cert
+# kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/crashpod.v2/new-cert.yaml
+```
+
+---
+### meme generator Failure
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/holmes-meme-generator/failure/
+```
+
+---
+### Init Continaers
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/init_crashloop_backoff/create_init_crashloop_backoff.yaml
+```
+
+---
+### Pod Resources
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+```bash
+kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/pending_pods/pending_pod_resources.yaml
+```
+
+---
+## More Scenarios ⭐⭐⭐
+![bg right:35% 80%](https://assets.zyrosite.com/cdn-cgi/image/format=auto,fit=crop/YD0y4WNK2NF309oZ/10595761-YNqNDGrBpeU5ywZO.png)
+
+---
+### Preps
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+```bash
+kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/000_preps.yaml
+```
+
+---
+### Use Case: no running pods
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Ensure that deployment pods are up and running
+```bash
+kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/010_no-running-pods.yaml
+```
+
+---
+### Use Case wrong resource used
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Ensure that deployment pods are up and running
+```bash
+kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/020_wrong-resource-used.yaml
+```
+
+---
+### Use Case: ConfigMap
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Ensure that deployment pods are up and running
+```bash
+kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/030_configmap.yaml
+```
+
+---
+### PVC use case
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Ensure that pvc is created, bound and deployment pods are up and running
+```bash
+kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/040_pvc.yml
+```
+
+---
+### Service configuration
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Ensure connection can be established to the service via external und cluster IPs
+```bash
+kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/050_service.yml
+```
+
+---
+### Ingress configuration
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+Ensure connection can be established via ingress
+```bash
+kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/060_ingress.yml
+```
