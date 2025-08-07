@@ -22,7 +22,7 @@ paginate: true
 ---
 ### Crashing Pod (CrashLoopBackoff)
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
-Apply the manidest. Ensure the pod can start.
+Apply the manifest. Ensure the pod can start.
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/main/crashpod/broken.yaml
 ```
@@ -70,7 +70,7 @@ kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/
 ---
 ### Wrong Mount Path
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
-Apply the manifest. Check the logs of running pods. The reader container in the deployment should not log an error message.
+Apply the manifest. Check the logs of running pods. The reader container in the deployment should not log error messages.
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/mhausenblas/troubleshooting-k8s-apps/refs/heads/master/04_storage-failedmount.yaml
 ```
