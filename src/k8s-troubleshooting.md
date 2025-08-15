@@ -16,7 +16,6 @@ paginate: true
 
 ---
 ## Simple Scenarios ⭐
-
 ![bg right:35% 80%](https://assets.zyrosite.com/cdn-cgi/image/format=auto,fit=crop/YD0y4WNK2NF309oZ/10595761-YNqNDGrBpeU5ywZO.png)
 
 ---
@@ -102,7 +101,7 @@ done
 
 ---
 ### Init Containers
-Apply manifest. Ensure the pod can start and keep runnning.
+Apply manifest. Ensure the pod can start and keeps runnning.
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/robusta-dev/kubernetes-demos/refs/heads/main/init_crashloop_backoff/create_init_crashloop_backoff.yaml
@@ -174,4 +173,76 @@ kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/
 Ensure connection can be established via ingress
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/heads/main/examples/troubleshooting/060_ingress.yml
+```
+
+
+---
+## More Scenarios ⭐⭐⭐
+![bg right:35% 80%](https://assets.zyrosite.com/cdn-cgi/image/format=auto,fit=crop/YD0y4WNK2NF309oZ/10595761-YNqNDGrBpeU5ywZO.png)
+
+---
+### Troubleshoot Exercizes
+![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
+
+07: Probes
+09: Networking
+10: Access via Ingress
+11: Multiple Errors in App Deployment
+12: Multi-service application fails to start
+13: Application fails to start
+14: 
+15: 
+
+```bash
+git clone https://github.com/syseleven/kubernetes-debugging-workshop.git
+cd kubernetes-debugging-workshop
+
+EXERCIZE_NAME=[EXERCIZE]
+cd $EXERCIZE_NAME
+kubectl create ns $EXERCIZE_NAME
+kubectl        ns $EXERCIZE_NAME
+kubectl apply -f manifests
+```
+---
+## Helm
+![bg right:35% 50%](https://helm.sh/img/helm.svg)
+Try to configure and install by means of helm one(or multiple) of the following applications
+  - jenkins
+  - quay
+  - harbor
+  - mariadb
+  - postgresql
+  - foreman
+  - kgateway
+
+
+
+---
+## Debugging Hints
+![bg right:35% 80%](https://assets.zyrosite.com/cdn-cgi/image/format=auto,fit=crop/YD0y4WNK2NF309oZ/10595761-YNqNDGrBpeU5ywZO.png)
+```bash
+# get logs
+kubectl logs
+
+# get current state
+kubectl describe
+
+# get current kubernetes events
+kubectl events
+
+# get the definition of youe resource, inspect status
+kubectl get -oyaml
+
+# start a debug pod in the same network namespace as the target one
+kubectl debug
+
+# when a pod fails to start, introduce an inifnit loop as "command" and inspect the application inside of the pod
+...
+  command: 
+    - /bin/sh
+  args:
+    - -c
+    - while sleep 10; do date; done
+...
+
 ```

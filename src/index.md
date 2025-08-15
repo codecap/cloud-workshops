@@ -14,7 +14,7 @@ paginate: true
 # Workshops
 
 
----:q!
+---
 # Author
 
 ![bg left w:256 ](https://www.xing.com/image/0_e_2_8e340a718_11349211_5/vladislav-nazarenko-foto.1024x1024.jpg)
@@ -33,7 +33,6 @@ Networking: LinkedIn, Xing
 - Troubleshooting
 
 ---
-
 ## Content
 1. [Container](container.html)
 1. [K8S-Distros](k8s-distros.html)
@@ -44,4 +43,4 @@ Networking: LinkedIn, Xing
 1. K8S-Storage
 1. K8S-Security
 1. K8S-Observability
-1. K8S-Troubleshooting
+1. [K8S-Troubleshooting](https://codecap.github.io/cloud-workshops/k8s-troubleshooting.html)
