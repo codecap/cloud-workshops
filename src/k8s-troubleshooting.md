@@ -218,25 +218,25 @@ Try to configure and install by means of helm one(or multiple) of the following 
 
 
 ---
-## Debugging Hints
+## Debugging Tips
 ![bg right:35% 80%](https://assets.zyrosite.com/cdn-cgi/image/format=auto,fit=crop/YD0y4WNK2NF309oZ/10595761-YNqNDGrBpeU5ywZO.png)
 ```bash
 # get logs
-kubectl logs
+kubectl logs [POD_NAME]
 
 # get current state
-kubectl describe
+kubectl describe [pod|deploy|servcie|ingress|...] [RESOURCE_NAME]
 
 # get current kubernetes events
 kubectl events
 
 # get the definition of youe resource, inspect status
-kubectl get -oyaml
+kubectl get[pod|deploy|servcie|ingress|...] [RESOURCE_NAME] -oyaml
 
 # start a debug pod in the same network namespace as the target one
-kubectl debug
+kubectl debug [TARGET_POD] -it --image=nicolaka/netshoot
 
-# when a pod fails to start, introduce an inifnit loop as "command" and inspect the application inside of the pod
+# when a pod fails to start, introduce an inifnite loop as "command" and inspect the application inside of the pod
 ...
   command: 
     - /bin/sh
@@ -245,4 +245,19 @@ kubectl debug
     - while sleep 10; do date; done
 ...
 
+# check network policies
+kubectl get networkpolicies
+
+# get service endpoints
+kubectl get services
+kubectl get endpoints
+
+# show labels
+kubectl get [pods|deployments|services|namespaces] --show-labels
+
+# list pods by selector
+kubectl get pods --show-labels -l app=frontend
+
+# show diff to current state
+kubectl diff -f [FILE_NAME]
 ```
