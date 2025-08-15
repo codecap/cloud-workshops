@@ -190,8 +190,8 @@ kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/
 11: Multiple Errors in App Deployment
 12: Multi-service application fails to start
 13: Application fails to start
-14: 
-15: 
+14: Not routable traffic (☝) 2 Namespaces
+15: Java web application fails to operate
 
 ```bash
 git clone https://github.com/syseleven/kubernetes-debugging-workshop.git
