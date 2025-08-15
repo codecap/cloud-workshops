@@ -181,7 +181,7 @@ kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/
 ![bg right:35% 80%](https://assets.zyrosite.com/cdn-cgi/image/format=auto,fit=crop/YD0y4WNK2NF309oZ/10595761-YNqNDGrBpeU5ywZO.png)
 
 ---
-### Troubleshoot Exercizes
+### Troubleshoot Exercices
 ![bg right:35% 50%](https://raw.githubusercontent.com/kubernetes/community/690273e13778a52736ed5f2d83597319186f637a/icons/svg/infrastructure_components/unlabeled/control-plane.svg)
 
 07: Probes
@@ -197,10 +197,10 @@ kubectl apply -f https://raw.githubusercontent.com/codecap/cloud-workshops/refs/
 git clone https://github.com/syseleven/kubernetes-debugging-workshop.git
 cd kubernetes-debugging-workshop
 
-EXERCIZE_NAME=[EXERCIZE]
-cd $EXERCIZE_NAME
-kubectl create ns $EXERCIZE_NAME
-kubectl        ns $EXERCIZE_NAME
+EXERCISE_NAME=[EXERCISE]
+cd $EXERCISE_NAME
+kubectl create ns $EXERCISE_NAME
+kubectl        ns $EXERCISE_NAME
 kubectl apply -f manifests
 ```
 ---
